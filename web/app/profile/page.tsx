@@ -4,7 +4,7 @@ import ProfileContent from "@/components/profile/profile-content"
 
 export default function ProfilePage() {
   return (
-    <div className="flex h-screen bg-[#E4F9F5]">
+    <div className="flex h-screen bg-gray-100">
       <Sidebar />
       <div className="flex-1 flex flex-col">
         <Header />
