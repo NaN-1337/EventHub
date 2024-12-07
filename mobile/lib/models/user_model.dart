@@ -61,6 +61,12 @@ class UserModel {
     
     Map data = doc.data()! as Map<String, dynamic>;
 
+    List<String> friends = (data["friends"] as List<dynamic>).map((e) => e.toString()).toList();
+    List<String> joinedEvents = (data["joinedEvents"] as List<dynamic>).map((e) => e.toString()).toList();
+    List<String> createdEvents = (data["createdEvents"] as List<dynamic>).map((e) => e.toString()).toList();
+    Map<String, int> tickets = (data["tickets"] as Map<dynamic, dynamic>).map((key, value) => MapEntry(key.toString(), value as int));
+    Map<String, List<String>> preferences = (data["preferences"] as Map<dynamic, dynamic>).map((key, value) => MapEntry(key.toString(), (value as List<dynamic>).map((e) => e.toString()).toList()));
+
     return UserModel(
       docId: doc.id,
       uid: data["uid"],
@@ -72,11 +78,11 @@ class UserModel {
       xpPoints: data["xpPoints"],
       donationPoints: data["donationPoints"],
       level: data["level"],
-      friends: List<String>.from(data["friends"]),
-      joinedEvents: List<String>.from(data["joinedEvents"]),
-      createdEvents: List<String>.from(data["createdEvents"]),
-      tickets: Map<String, int>.from(data["tickets"]),
-      preferences: Map<String, List<String>>.from(data["preferences"])
+      friends: friends,
+      joinedEvents: joinedEvents,
+      createdEvents: createdEvents,
+      tickets: tickets,
+      preferences: preferences
     );
   }
 }

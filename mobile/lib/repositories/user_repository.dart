@@ -109,17 +109,17 @@ class UserRepository {
         }
 
         // Handle case where no document matches the query
-        logger.e('[getUserStreamById()] No document found for email: $email');
+        logger.e('[getUserStreamByEmail()] No document found for email: $email');
         return null;
       }).handleError((error) {
         // Log or handle Firestore stream errors
-        logger.e('[getUserStreamById()] Error fetching user stream: $error');
+        logger.e('[getUserStreamByEmail()] Error fetching user stream: $error');
         return null;
       });
     } catch (e) {
       // If an error occurs outside the stream, return an error stream
-      logger.e('[getUserStreamById()] $e');
-      return Stream.error('[getUserStreamById()] $e');
+      logger.e('[getUserStreamByEmail()] $e');
+      return Stream.error('[getUserStreamByEmail()] $e');
     }
   }
 }

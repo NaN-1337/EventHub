@@ -50,6 +50,11 @@ class _HomePageState extends State<HomePage> {
                   children: [
                     Text('User Name: ${user.name}'),
                     Text('User Email: ${user.email}'),
+                    Text('Friends: ${user.friends}'),
+                    Text('Joined Events: ${user.joinedEvents}'),
+                    Text('Created Events: ${user.createdEvents}'),
+                    Text('Tickets: ${user.tickets}'),
+                    Text('Preferences: ${user.preferences}'),
                   ],
                 );
               },
