@@ -1,0 +1,2 @@
+- After changing app icon: dart run flutter_launcher_icons
+- After changing splash screen icon: dart run flutter_native_splash:create --path=flutter_native_splash.yaml
