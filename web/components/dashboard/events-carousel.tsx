@@ -6,6 +6,7 @@ import { ChevronLeft, ChevronRight, MapPin, Calendar } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { EditEventModal } from "./edit-event-modal"
 
 const events = [
   {
@@ -23,12 +24,15 @@ const events = [
   // Add more sample events here
 ]
 
-function EventCard({ event }: { event: typeof events[0] }) {
+function EventCard({ event, onEdit }: { event: typeof events[0]; onEdit: () => void }) {
   return (
-    <Card className="relative overflow-hidden h-[300px] rounded-2xl shadow-lg transition-transform duration-300 hover:scale-105">
+    <Card 
+      className="relative overflow-hidden h-[300px] rounded-2xl shadow-lg transition-transform duration-300 hover:scale-105 cursor-pointer"
+      onClick={onEdit}
+    >
       <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-10" />
       <img
-        src={`rock-poster.png`}
+        src={`https://source.unsplash.com/random/400x300?${event.category}`}
         alt={event.name}
         className="h-full w-full object-cover"
       />
@@ -66,6 +70,7 @@ export function EventCarousel() {
 
   const [canScrollPrev, setCanScrollPrev] = React.useState(false)
   const [canScrollNext, setCanScrollNext] = React.useState(true)
+  const [editingEvent, setEditingEvent] = React.useState<typeof events[0] | null>(null)
 
   const scrollPrev = React.useCallback(() => {
     if (emblaApi) emblaApi.scrollPrev()
@@ -94,7 +99,10 @@ export function EventCarousel() {
         <div className="flex gap-6">
           {events.map((event) => (
             <div key={event.uid} className="flex-[0_0_350px] min-w-0">
-              <EventCard event={event} />
+              <EventCard 
+                event={event} 
+                onEdit={() => setEditingEvent(event)}
+              />
             </div>
           ))}
         </div>
@@ -118,6 +126,13 @@ export function EventCarousel() {
         >
           <ChevronRight className="h-4 w-4" />
         </Button>
+      )}
+      {editingEvent && (
+        <EditEventModal 
+          event={editingEvent} 
+          isOpen={!!editingEvent} 
+          onClose={() => setEditingEvent(null)} 
+        />
       )}
     </div>
   )
