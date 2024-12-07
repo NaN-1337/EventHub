@@ -72,7 +72,7 @@ export function EditEventModal({ event, isOpen, onClose }: EditEventModalProps) 
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
+                <Calendar className='bg-white'
                   mode="single"
                   selected={date}
                   onSelect={setDate}

@@ -12,7 +12,7 @@ export function EventsCenter() {
   return (
     <div>
       <div className="mb-6 flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-[#40514E]">Featured Events</h2>
+        <h2 className="text-2xl font-bold text-[#40514E]">My Events</h2>
         <Button 
           className="bg-[#11999E] hover:bg-[#11999E]/90 rounded-xl"
           onClick={() => setIsCreateModalOpen(true)}

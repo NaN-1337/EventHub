@@ -1,13 +1,16 @@
-"use client"
+"use client";
 
-import { ChevronDown, MoreHorizontal, Calendar, MapPin } from 'lucide-react'
-import { Button } from "@/components/ui/button"
+import * as React from "react";
+import { db } from "@/lib/firebaseConfig"; // Import Firestore from your config
+import { collection, getDocs } from "firebase/firestore";
+import { ChevronDown, MoreHorizontal, Calendar, MapPin } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from "@/components/ui/dropdown-menu";
 import {
   Table,
   TableBody,
@@ -15,27 +18,31 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-
-const events = [
-  {
-    uid: "e1",
-    name: "Local Rock Concert at The Old Brewery",
-    description: "A night of live rock music featuring up-and-coming bands, craft beer, and a community atmosphere.",
-    location: "The Old Brewery",
-    date: "2025-04-01",
-    organizer: "community",
-    points: 5,
-    participants: [],
-    category: "music",
-    subcategory: "Rock",
-  },
-  // Add more sample events here
-]
+} from "@/components/ui/table";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
 export function EventList() {
+  const [events, setEvents] = React.useState<any[]>([]); // State to hold events
+
+  const fetchAllEvents = React.useCallback(async () => {
+    try {
+      const eventsRef = collection(db, "events");
+      const querySnapshot = await getDocs(eventsRef);
+      const fetchedEvents = querySnapshot.docs.map((doc) => ({
+        id: doc.id, // Firestore document ID
+        ...doc.data(), // Event data
+      }));
+      setEvents(fetchedEvents);
+    } catch (error) {
+      console.error("Error fetching all events:", error);
+    }
+  }, []);
+
+  React.useEffect(() => {
+    fetchAllEvents();
+  }, [fetchAllEvents]);
+
   return (
     <Card className="rounded-2xl shadow-lg">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -108,6 +115,5 @@ export function EventList() {
         </Table>
       </CardContent>
     </Card>
-  )
+  );
 }
-
