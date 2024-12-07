@@ -30,6 +30,22 @@ class EventRepository {
     }
   }
 
+  // Returns a list of events that the user has joined based on the event UIDs in joinedEvents.
+  List<EventModel> getJoinedEvents(List<EventModel> allEvents, List<String> joinedEvents) {
+    return allEvents.where((event) => joinedEvents.contains(event.uid)).toList();
+  }
+
+  // Returns a list of events that match the user's preferences.
+  // Preferences is a map like { "music": ["Rock", "Pop"], "sports": ["Football"] }
+  // If an event's category and subcategory are found in the user's preferences, we consider it recommended.
+  List<EventModel> getRecommendedEvents(List<EventModel> allEvents, Map<String, List<String>> preferences) {
+    return allEvents.where((event) {
+      final subcategories = preferences[event.category];
+      if (subcategories == null) return false; 
+      return subcategories.contains(event.subcategory);
+    }).toList();
+  }
+
   Stream<List<EventModel>> getAllEventsStream() {
     try {
       return _firestore.collection('events').snapshots().map((querySnapshot) {

@@ -2,15 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:mobile/models/event_model.dart';
+import 'package:mobile/models/user_model.dart';
+import 'package:mobile/providers/events_provider.dart';
+import 'package:mobile/providers/user_provider.dart';
 import 'package:mobile/screens/onboarding/controller.dart';
 import 'package:mobile/utils/color_data.dart';
 import 'package:mobile/utils/constant.dart';
 import 'package:mobile/utils/data_file.dart';
+import 'package:mobile/utils/globals.dart';
 import 'package:mobile/utils/modal/modal_event_category.dart';
 import 'package:mobile/utils/modal/modal_feature_event.dart';
 import 'package:mobile/utils/modal/modal_popular_event.dart';
 import 'package:mobile/utils/modal/modal_trending_event.dart';
 import 'package:mobile/utils/widget_utils.dart';
+import 'package:provider/provider.dart';
 
 class HomeTab extends StatefulWidget {
   const HomeTab({super.key});
@@ -34,6 +40,27 @@ class _HomeTabState extends State<HomeTab> {
 
   @override
   Widget build(BuildContext context) {
+
+    final userProvider = Provider.of<UserProvider>(context);
+    UserModel? currentUser = userProvider.currentUser;
+
+    final eventsProvider = Provider.of<EventsProvider>(context);
+    List<EventModel> events = eventsProvider.events;
+
+    // Filter joined events
+    List<EventModel> joinedEvents = [];
+    if (currentUser != null && currentUser.joinedEvents.isNotEmpty) {
+      joinedEvents = eventRepository.getJoinedEvents(events, currentUser.joinedEvents);
+    }
+
+    // Filter recommended events
+    List<EventModel> recommendedEvents = [];
+    if (currentUser != null && currentUser.preferences.isNotEmpty) {
+      recommendedEvents = eventRepository.getRecommendedEvents(events, currentUser.preferences);
+    }
+
+    List<EventModel> feelingEvents = [];
+
     return Column(
       children: [
         buildAppBar(),
@@ -54,7 +81,7 @@ class _HomeTabState extends State<HomeTab> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      getCustomFont("Featured Events", 20.sp, Colors.black, 1,
+                      getCustomFont("Maybe you feel like...", 20.sp, Colors.black, 1,
                           fontWeight: FontWeight.w700, txtHeight: 1.5.h),
                       GestureDetector(
                         onTap: () {
@@ -68,7 +95,10 @@ class _HomeTabState extends State<HomeTab> {
                   ),
                 ),
                 getVerSpace(12.h),
-                buildFeatureEventList(context),
+                if (feelingEvents.isNotEmpty)
+                  buildFeelingEventList(context)
+                else
+                  feelingsPlaceholder(),
 
                 getVerSpace(24.h),
 
@@ -387,7 +417,72 @@ class _HomeTabState extends State<HomeTab> {
     );
   }
 
-  SizedBox buildFeatureEventList(BuildContext context) {
+  Widget feelingsPlaceholder() {
+    return Container(
+      width: 374.h,
+      height: 196.h,
+      margin: EdgeInsets.only(right: 20.h, left: 20.h),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(22.h),
+        image: DecorationImage(
+            image: AssetImage("${Constant.assetImagePath}feelings.png"),
+                  fit: BoxFit.fill),
+      ),
+      child: GestureDetector(
+        onTap: () {
+          // Constant.sendToNext(context, Routes.featuredEventDetailRoute);
+        },
+        child: Stack(
+          children: [
+            Container(
+              height: 196.h,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(22.h),
+                  gradient: LinearGradient(
+                      colors: [
+                        "#000000".toColor().withOpacity(0.05),
+                        "#000000".toColor().withOpacity(0.65)
+                      ],
+                      stops: const [
+                        0.0,
+                        1.0
+                      ],
+                      begin: Alignment.centerRight,
+                      end: Alignment.centerLeft)),
+              padding: EdgeInsets.only(left: 24.h),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  getCustomFont("How are you feeling today?", 20.sp,
+                      Colors.white, 1,
+                      fontWeight: FontWeight.w700, txtHeight: 1.5.h),
+                  getVerSpace(4.h),
+                  Row(
+                    children: [
+                      getCustomFont("Get recommendations based on your mood",
+                          15.sp, Colors.white, 1,
+                          fontWeight: FontWeight.w500, txtHeight: 1.5.h),
+                    ],
+                  ),
+                  getVerSpace(22.h),
+                  getButton(context, accentColor, "Tell us",
+                      Colors.white, () {}, 14.sp,
+                      weight: FontWeight.w700,
+                      buttonHeight: 40.h,
+                      borderRadius: BorderRadius.circular(14.h),
+                      buttonWidth: 111.h)
+                ],
+              ),
+            )
+          ],
+        ),
+      ),
+    );
+  }
+
+  SizedBox buildFeelingEventList(BuildContext context) {
     return SizedBox(
       height: 196.h,
       child: ListView.builder(
