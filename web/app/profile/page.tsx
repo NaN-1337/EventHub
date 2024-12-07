@@ -1,33 +1,16 @@
-'use client'
-
-import { ProfileForm } from "@/components/profile/profile-form"
-import { Bell } from 'lucide-react'
-import { Button } from "@/components/ui/button"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { CardTitle } from "@/components/ui/card"
+import { Header } from "@/components/dashboard/header"
+import { Sidebar } from "@/components/dashboard/sidebar"
+import ProfileContent from "@/components/profile/profile-content"
 
 export default function ProfilePage() {
   return (
-    <div className="p-8">
-      {/* Header */}
-      <div className="mb-8 flex items-center justify-between">
-        <div className="relative w-96">
-            <CardTitle>Profile Settings</CardTitle>
-        </div>
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon">
-            <Bell className="h-5 w-5" />
-          </Button>
-          <Avatar>
-            <AvatarImage src="/avatar.svg" />
-            <AvatarFallback>SC</AvatarFallback>
-          </Avatar>
-        </div>
-      </div>
-
-      {/* Profile Content */}
-      <div className="max-w-4xl mx-auto">
-        <ProfileForm />
+    <div className="flex h-screen bg-[#E4F9F5]">
+      <Sidebar />
+      <div className="flex-1 flex flex-col">
+        <Header />
+        <main className="flex-1 overflow-auto p-8">
+          <ProfileContent />
+        </main>
       </div>
     </div>
   )

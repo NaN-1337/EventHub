@@ -14,7 +14,7 @@ const navigation = [
   },
   {
     name: "Profile",
-    href: "/dashboard/profile",
+    href: "/profile",
     icon: User,
   },
   {
