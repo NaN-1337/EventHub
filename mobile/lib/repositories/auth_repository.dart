@@ -35,8 +35,13 @@ class AuthRepository {
       if (userInFirestoreCollection == true) {
 
         User user = _firebaseAuth.currentUser!;
+
+        if (user.email == null) {
+          logger.e('[authRepository.signIn()] User email is null.');
+          return;
+        }
         
-        await startListeningToProviders(context, user.uid);
+        await startListeningToProviders(context, user.email!);
         Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (context) => const HomePage()), (Route<dynamic> route) => false);
         
       } else if (userInFirestoreCollection == false) {
@@ -86,11 +91,11 @@ class AuthRepository {
     }
   }
 
-  Future<void> startListeningToProviders(BuildContext context, String uid) async {
+  Future<void> startListeningToProviders(BuildContext context, String email) async {
 
     final userProvider = Provider.of<UserProvider>(context, listen: false);
 
-    userProvider.startListeningToUser(uid);
+    userProvider.startListeningToUser(email);
 
     await userProvider.initializationCompleter.future;
   }

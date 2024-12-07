@@ -16,8 +16,8 @@ class UserProvider extends ChangeNotifier {
   UserModel? get currentUser => _currentUser;
 
   // Start listening to the current user's data in Firestore
-  void startListeningToUser(String userUid) {
-    subscription = _userRepository.getUserStreamById(userUid).listen((userData) {
+  void startListeningToUser(String email) {
+    subscription = _userRepository.getUserStreamByEmail(email).listen((userData) {
       _currentUser = userData;
       if (!initializationCompleter.isCompleted) {
         initializationCompleter.complete(); // Completes the future when user is set

@@ -48,7 +48,6 @@ class _HomePageState extends State<HomePage> {
 
                 return Column(
                   children: [
-                    Text('User ID: ${user.uid}'),
                     Text('User Name: ${user.name}'),
                     Text('User Email: ${user.email}'),
                   ],

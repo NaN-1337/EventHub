@@ -99,17 +99,17 @@ class UserRepository {
   }
 
   /// Get a Firestore stream for a specific user's data
-  Stream<UserModel?> getUserStreamById(String userId) {
+  Stream<UserModel?> getUserStreamByEmail(String email) {
     try {
-      return _firestore.collection('users').where('uid', isEqualTo: userId).snapshots().map((querySnapshot) {
+      return _firestore.collection('users').where('email', isEqualTo: email).snapshots().map((querySnapshot) {
         if (querySnapshot.docs.isNotEmpty) {
-          // Assuming only one document matches the "uid"
+          // Assuming only one document matches the "email"
           final doc = querySnapshot.docs.first;
           return UserModel.fromDocumentSnapshot(doc);
         }
 
         // Handle case where no document matches the query
-        logger.e('[getUserStreamById()] No document found for uid: $userId');
+        logger.e('[getUserStreamById()] No document found for email: $email');
         return null;
       }).handleError((error) {
         // Log or handle Firestore stream errors

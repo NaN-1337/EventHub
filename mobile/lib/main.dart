@@ -89,7 +89,12 @@ Future<Widget> returnPageBasedOnLoginStatus(BuildContext context) async {
   // If user is logged out, redirect to LoginPage().
   if (user == null) return const LoginPage();
 
+  if (user.email == null) {
+    logger.e('[returnPageBasedOnLoginStatus()] User email is null.');
+    return const LoginPage();
+  }
+  
   // Go to HomePage().
-  authRepository.startListeningToProviders(context, user.uid);
+  authRepository.startListeningToProviders(context, user.email!);
   return const HomePage();
 }
