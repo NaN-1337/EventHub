@@ -24,16 +24,30 @@ import { Badge } from "@/components/ui/badge";
 
 export function EventList() {
   const [events, setEvents] = React.useState<any[]>([]); // State to hold events
+  const [imageMap, setImageMap] = React.useState<Record<string, string>>({}); // Map for UUID-to-image mapping
 
   const fetchAllEvents = React.useCallback(async () => {
     try {
       const eventsRef = collection(db, "events");
       const querySnapshot = await getDocs(eventsRef);
-      const fetchedEvents = querySnapshot.docs.map((doc) => ({
-        id: doc.id, // Firestore document ID
-        ...doc.data(), // Event data
-      }));
+      const fetchedEvents = querySnapshot.docs.map((doc, index) => {
+        const uuid = doc.id;
+        const imageFile = `${index + 1}.png`; // Assign images in sequence
+        return {
+          id: uuid,
+          image: imageFile,
+          ...doc.data(),
+        };
+      });
+
+      // Create the UUID-to-image map
+      const uuidToImage = fetchedEvents.reduce((map, event) => {
+        map[event.id] = `/events-images/${event.image}`;
+        return map;
+      }, {} as Record<string, string>);
+
       setEvents(fetchedEvents);
+      setImageMap(uuidToImage);
     } catch (error) {
       console.error("Error fetching all events:", error);
     }
@@ -76,41 +90,49 @@ export function EventList() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {events.map((event) => (
-              <TableRow key={event.uid} className="hover:bg-[#E4F9F5]/50">
-                <TableCell>
-                  <img
-                    src={`https://source.unsplash.com/random/100x100?${event.category}`}
-                    alt={event.name}
-                    className="h-12 w-12 rounded-lg object-cover"
-                  />
-                </TableCell>
-                <TableCell className="font-medium">{event.name}</TableCell>
-                <TableCell>
-                  <div className="flex items-center">
-                    <Calendar className="mr-2 h-4 w-4 text-[#11999E]" />
-                    {new Date(event.date).toLocaleDateString()}
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center">
-                    <MapPin className="mr-2 h-4 w-4 text-[#11999E]" />
-                    {event.location}
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <Badge variant="secondary" className="bg-[#30E3CA] text-[#40514E]">
-                    {event.category}
-                  </Badge>
-                </TableCell>
-                <TableCell className="text-right font-medium">{event.points}</TableCell>
-                <TableCell>
-                  <Button variant="ghost" size="icon" className="rounded-full">
-                    <MoreHorizontal className="h-4 w-4" />
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
+            {events.map((event) => {
+              const eventImage =
+                imageMap[event.id] || "/events-images/default.png"; // Fallback image
+              return (
+                <TableRow key={event.id} className="hover:bg-[#E4F9F5]/50">
+                  <TableCell>
+                    <img
+                      src={eventImage}
+                      alt={event.name}
+                      onError={(e) => {
+                        const img = e.currentTarget;
+                        img.src = "/events-images/default.png"; // Fallback
+                      }}
+                      className="h-12 w-12 rounded-lg object-cover"
+                    />
+                  </TableCell>
+                  <TableCell className="font-medium">{event.name}</TableCell>
+                  <TableCell>
+                    <div className="flex items-center">
+                      <Calendar className="mr-2 h-4 w-4 text-[#11999E]" />
+                      {new Date(event.date).toLocaleDateString()}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center">
+                      <MapPin className="mr-2 h-4 w-4 text-[#11999E]" />
+                      {event.location}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant="secondary" className="bg-[#30E3CA] text-[#40514E]">
+                      {event.category}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-right font-medium">{event.points}</TableCell>
+                  <TableCell>
+                    <Button variant="ghost" size="icon" className="rounded-full">
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
       </CardContent>

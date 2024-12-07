@@ -18,10 +18,10 @@ export function Header() {
         {/* Search Bar */}
         <div className="flex items-center gap-4 flex-1 max-w-xl">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#40514E]/50" />
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#40514E]/50 bg-white" />
             <Input
               placeholder="Search events..."
-              className="pl-9 bg-[#E4F9F5] border-[#30E3CA] rounded-xl focus:ring-[#11999E]"
+              className="pl-9 bg-[#E4F9F5] border-gray-100 rounded-xl focus:ring-[#11999E] bg-white"
             />
           </div>
         </div>
