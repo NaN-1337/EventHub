@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
-import { LayoutDashboard, User, Users, Calendar, Globe2, Mail } from 'lucide-react'
+import { LayoutDashboard, User, Users, Calendar, Globe2, Mail, LogOut } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 
 const navigation = [
@@ -29,7 +29,7 @@ const navigation = [
   },
   {
     name: "All Events",
-    href: "/dashboard/all-events",
+    href: "/all-events",
     icon: Globe2,
   },
   {
@@ -73,6 +73,15 @@ export function Sidebar() {
           )
         })}
       </nav>
+      <div className="p-4">
+        <Button
+          variant="ghost"
+          className="w-full justify-start rounded-xl text-[#E4F9F5] hover:bg-[#30E3CA]/20"
+        >
+          <LogOut className="mr-2 h-5 w-5" />
+          Logout
+        </Button>
+      </div>
       <div className="p-4 text-xs text-[#E4F9F5]/80">
         <p>EventHub Dashboard</p>
         <p>© 2023 All rights reserved</p>

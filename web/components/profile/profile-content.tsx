@@ -92,7 +92,7 @@ export default function ProfileContent() {
   }
 
   return (
-    <div className="flex flex-col lg:flex-row gap-8 h-full w-full p-8 bg-[#E4F9F5]">
+    <div className="flex flex-col lg:flex-row gap-8 h-full w-full p-8 bg-gray-100">
 
       {/* Left Column: Profile Information */}
       <div className="flex-1 flex flex-col bg-white rounded-2xl shadow-md p-6 min-h-screen">
