@@ -1,0 +1,11 @@
+{
+    "files.exclude": {
+        "**/.dart_tool": true,
+        "**/.idea": true,
+        "**/.metadata": true,
+        "**/.vscode": true,
+        "**/analysis_options.yaml": true,
+        "**/mobile.iml": true,
+        "**/pubspec.lock": true
+    }
+}
