@@ -19,8 +19,13 @@ dependencies:
   flutter_native_splash: ^2.4.3
   font_awesome_flutter: ^10.8.0
   get: ^4.6.5
+  flutter_screenutil: ^5.8.4
+  flutter_svg: ^2.0.7
   logger: ^2.5.0
   provider: ^6.1.2
+  shared_preferences: ^2.2.0
+  image_picker: ^0.8.9
+  pinput: ^2.2.31
 
 dev_dependencies:
   flutter_test:
@@ -42,3 +47,15 @@ flutter:
     # Add assets from the images directory to the application.
     - assets/images/
     - assets/images/finexa/
+
+  fonts:
+    - family: Gilroy
+      fonts:
+        - asset: fonts/Gilroy-Bold.ttf
+          weight: 700
+        - asset: fonts/Gilroy-Regular.ttf
+          weight: 400
+        - asset: fonts/Gilroy-SemiBold.ttf
+          weight: 600
+        - asset: fonts/Gilroy-Medium.ttf
+          weight: 500

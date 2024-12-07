@@ -6,6 +6,7 @@ import 'package:mobile/repositories/user_repository.dart';
 var logger = Logger(printer: PrettyPrinter(),);
 
 String appName = 'DB Mobile';
+String packageName = 'com.example.mobile';
 
 // Initialize repositories globally
 final UserRepository userRepository = UserRepository();

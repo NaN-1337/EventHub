@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:mobile/providers/user_provider.dart';
-import 'package:mobile/screens/authentication/login.dart';
 import 'package:mobile/utils/globals.dart';
 import 'package:provider/provider.dart';
 
@@ -12,6 +12,13 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+
+  @override
+  void initState() {
+    super.initState();
+    FlutterNativeSplash.remove();
+  }
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -25,7 +32,6 @@ class _HomePageState extends State<HomePage> {
             GestureDetector(
               onTap: () {
                 authRepository.logOut(context);
-                Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (context) => const LoginPage()), (Route<dynamic> route) => false);
               },
               child: Container(
                 margin: const EdgeInsets.symmetric(horizontal: 15),

@@ -2,10 +2,11 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile/providers/user_provider.dart';
 import 'package:mobile/repositories/user_repository.dart';
-import 'package:mobile/screens/authentication/utils/forget_email_sent.dart';
-import 'package:mobile/screens/home.dart';
+import 'package:mobile/utils/constant.dart';
 import 'package:mobile/utils/dialog_widgets.dart';
 import 'package:mobile/utils/globals.dart';
+import 'package:mobile/utils/pref_data.dart';
+import 'package:mobile/utils/routes/app_routes.dart';
 import 'package:provider/provider.dart';
 
 class AuthRepository {
@@ -23,6 +24,9 @@ class AuthRepository {
     loadingDialog(context);
 
     try {
+
+      await PrefData.setSelectInterest(true);
+      
       // 1. Check data with FirebaseAuth (validate email and password)
       await _firebaseAuth.signInWithEmailAndPassword(
         email: email,
@@ -42,7 +46,7 @@ class AuthRepository {
         }
         
         await startListeningToProviders(context, user.email!);
-        Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (context) => const HomePage()), (Route<dynamic> route) => false);
+        Constant.sendToNext(context, Routes.homeScreenRoute);
         
       } else if (userInFirestoreCollection == false) {
         _firebaseAuth.signOut();
@@ -65,30 +69,20 @@ class AuthRepository {
     }
   }
 
-  void logOut(BuildContext context, {bool showLoadingDialog = true}) {
+  void logOut(BuildContext context, {bool showLoadingDialog = true}) async {
     if (showLoadingDialog) {
       loadingDialog(context);
     }
 
+    await PrefData.setIsIntro(false);
+    await PrefData.setIsSignIn(false);
+    await PrefData.setSelectInterest(true);
+
     stopListeningToProviders(context);
 
     FirebaseAuth.instance.signOut();
-  }
 
-  Future<void> sendPasswordResetEmail(BuildContext context, BuildContext dialogContext, String email) async {
-
-    Navigator.pop(dialogContext);
-    loadingDialog(context);
-
-    try {
-      await _firebaseAuth.sendPasswordResetEmail(email: email);
-      logger.i('Password reset email sent SUCCESSFULLY!');
-      Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (context) => const ForgetEmailSent()), (Route<dynamic> route) => false);
-      
-    } catch (error) {
-      logger.e(error.toString());
-      errorDialog(context, error.toString());
-    }
+    Constant.sendToNext(context, Routes.loginRoute);
   }
 
   Future<void> startListeningToProviders(BuildContext context, String email) async {
