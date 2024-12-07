@@ -21,6 +21,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^2.30.0",
+    "embla-carousel-react": "^8.5.1",
     "firebase": "^11.0.2",
     "framer-motion": "^11.13.1",
     "lucide-react": "^0.464.0",
