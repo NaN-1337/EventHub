@@ -171,6 +171,7 @@ export function EventCarousel() {
             setEditingEvent(viewingEvent);
             setViewingEvent(null);
           }}
+          imageMap={imageMap} // Pass the mapping here
         />
       )}
       {editingEvent && (

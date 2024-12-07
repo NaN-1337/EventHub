@@ -21,28 +21,18 @@ interface ViewEventModalProps {
   isOpen: boolean;
   onClose: () => void;
   onEdit: () => void;
+  imageMap: Record<string, string>; // Mapping from Event IDs to Image URLs
 }
 
-export function ViewEventModal({ event, isOpen, onClose, onEdit }: ViewEventModalProps) {
+export function ViewEventModal({ event, isOpen, onClose, onEdit, imageMap }: ViewEventModalProps) {
   const [eventImage, setEventImage] = useState<string>("");
 
   useEffect(() => {
-    const fetchEventImage = async () => {
-      const imageMap: Record<string, string> = {
-        "1": "/events-images/1.png",
-        "2": "/events-images/2.png",
-        "3": "/events-images/3.png",
-        // Extend mappings dynamically as needed.
-      };
-
-      // Use event.id directly as it's like "1", "2", etc.
-      const imagePath = imageMap[event.id] || "/events-images/default.png";
-      console.log(`Mapped image path for event ID ${event.id}: ${imagePath}`);
-      setEventImage(imagePath);
-    };
-
-    fetchEventImage();
-  }, [event.id]);
+    // Fetch image dynamically using imageMap
+    const imagePath = imageMap[event.id] || "/events-images/default.png";
+    console.log(`Mapped image path for event ID ${event.id}: ${imagePath}`);
+    setEventImage(imagePath);
+  }, [event.id, imageMap]);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -51,6 +41,7 @@ export function ViewEventModal({ event, isOpen, onClose, onEdit }: ViewEventModa
           <DialogTitle className="text-2xl font-bold text-[#40514E]">{event.name}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
+          {/* Event Image */}
           <img
             src={eventImage}
             alt={`Image for ${event.name}`}
@@ -62,6 +53,7 @@ export function ViewEventModal({ event, isOpen, onClose, onEdit }: ViewEventModa
             }}
             className="w-full h-48 object-cover rounded-lg"
           />
+          {/* Event Details */}
           <p className="text-[#40514E]">{event.description}</p>
           <div className="flex items-center gap-2">
             <Calendar className="h-5 w-5 text-[#11999E]" />
@@ -87,6 +79,7 @@ export function ViewEventModal({ event, isOpen, onClose, onEdit }: ViewEventModa
               {event.subcategory}
             </Badge>
           </div>
+          {/* Actions */}
           <div className="flex justify-end gap-2">
             <Button onClick={onClose} variant="outline">
               Close
