@@ -206,7 +206,7 @@ class SignUpController extends GetxController {
   }
 }
 
-class HomeController extends GetxController {
+class NavBarController extends GetxController {
   RxInt index = 0.obs;
 
   onChange(RxInt value) {

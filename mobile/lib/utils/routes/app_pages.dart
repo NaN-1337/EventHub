@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mobile/screens/home.dart';
+import 'package:mobile/screens/home/navigation_bar.dart';
 import 'package:mobile/screens/onboarding/intro.dart';
 import 'package:mobile/screens/onboarding/login/login_screen.dart';
 import 'package:mobile/screens/onboarding/select_interest_screen.dart';
@@ -24,6 +24,6 @@ class AppPages {
 
     Routes.selectInterestRoute: (context) => const SelectInterestScreen(),
 
-    Routes.homeScreenRoute: (context) => const HomePage(),
+    Routes.homeScreenRoute: (context) => const NavBar(),
   };
 }
