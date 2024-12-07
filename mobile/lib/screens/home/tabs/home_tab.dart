@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:mobile/screens/onboarding/controller.dart';
@@ -26,12 +27,21 @@ class _HomeTabState extends State<HomeTab> {
   List<ModalFeatureEvent> featureEventLists = DataFile.featureEventList;
 
   @override
+  void initState() {
+    super.initState();
+    FlutterNativeSplash.remove();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Column(
       children: [
         buildAppBar(),
+
         getVerSpace(20.h),
+
         buildSearchWidget(context),
+        
         getVerSpace(24.h),
         Expanded(
             flex: 1,

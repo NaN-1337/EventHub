@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:mobile/providers/events_provider.dart';
 import 'package:mobile/providers/user_provider.dart';
 import 'package:mobile/repositories/user_repository.dart';
 import 'package:mobile/utils/constant.dart';
@@ -88,13 +89,17 @@ class AuthRepository {
   Future<void> startListeningToProviders(BuildContext context, String email) async {
 
     final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final eventsProvider = Provider.of<EventsProvider>(context, listen: false);
 
     userProvider.startListeningToUser(email);
+    eventsProvider.startListeningToEvents();
 
     await userProvider.initializationCompleter.future;
+    await eventsProvider.initializationCompleter.future;
   }
 
   Future<void> stopListeningToProviders(BuildContext context) async {
     Provider.of<UserProvider>(context, listen: false).stopListeningToUser();
+    Provider.of<EventsProvider>(context, listen: false).stopListeningToEvents();
   }
 }
