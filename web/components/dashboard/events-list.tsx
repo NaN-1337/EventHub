@@ -44,7 +44,7 @@ export function EventList() {
   }, [fetchAllEvents]);
 
   return (
-    <Card className="rounded-2xl shadow-lg">
+    <Card className="rounded-2xl shadow-lg bg-white">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-xl font-bold text-[#40514E]">Event List</CardTitle>
         <DropdownMenu>

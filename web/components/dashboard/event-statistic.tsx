@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 export function EventStatistic() {
   return (
-    <Card className="rounded-2xl shadow-lg">
+    <Card className="rounded-2xl shadow-lg bg-white">
       <CardHeader>
         <CardTitle className="text-xl font-bold text-[#40514E]">Event Statistics</CardTitle>
       </CardHeader>
