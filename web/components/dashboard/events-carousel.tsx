@@ -1,32 +1,18 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import useEmblaCarousel from "embla-carousel-react"
-import { ChevronLeft, ChevronRight, MapPin, Calendar } from 'lucide-react'
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { EditEventModal } from "./edit-event-modal"
+import * as React from "react";
+import { db } from "@/lib/firebaseConfig"; // Import Firestore from your config
+import { collection, getDocs } from "firebase/firestore";
+import useEmblaCarousel from "embla-carousel-react";
+import { ChevronLeft, ChevronRight, MapPin, Calendar } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { EditEventModal } from "./edit-event-modal";
 
-const events = [
-  {
-    uid: "e1",
-    name: "Local Rock Concert at The Old Brewery",
-    description: "A night of live rock music featuring up-and-coming bands, craft beer, and a community atmosphere.",
-    location: "The Old Brewery",
-    date: "2025-04-01",
-    organizer: "community",
-    points: 5,
-    participants: [],
-    category: "music",
-    subcategory: "Rock",
-  },
-  // Add more sample events here
-]
-
-function EventCard({ event, onEdit }: { event: typeof events[0]; onEdit: () => void }) {
+function EventCard({ event, onEdit }: { event: any; onEdit: () => void }) {
   return (
-    <Card 
+    <Card
       className="relative overflow-hidden h-[300px] rounded-2xl shadow-lg transition-transform duration-300 hover:scale-105 cursor-pointer"
       onClick={onEdit}
     >
@@ -58,51 +44,67 @@ function EventCard({ event, onEdit }: { event: typeof events[0]; onEdit: () => v
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }
 
 export function EventCarousel() {
-  const [emblaRef, emblaApi] = useEmblaCarousel({ 
-    loop: false, 
+  const [emblaRef, emblaApi] = useEmblaCarousel({
+    loop: false,
     align: "start",
-    containScroll: "trimSnaps" 
-  })
+    containScroll: "trimSnaps",
+  });
 
-  const [canScrollPrev, setCanScrollPrev] = React.useState(false)
-  const [canScrollNext, setCanScrollNext] = React.useState(true)
-  const [editingEvent, setEditingEvent] = React.useState<typeof events[0] | null>(null)
+  const [canScrollPrev, setCanScrollPrev] = React.useState(false);
+  const [canScrollNext, setCanScrollNext] = React.useState(true);
+  const [events, setEvents] = React.useState<any[]>([]); // State to hold events
+  const [editingEvent, setEditingEvent] = React.useState<any | null>(null);
 
-  const scrollPrev = React.useCallback(() => {
-    if (emblaApi) emblaApi.scrollPrev()
-  }, [emblaApi])
-
-  const scrollNext = React.useCallback(() => {
-    if (emblaApi) emblaApi.scrollNext()
-  }, [emblaApi])
-
-  const onSelect = React.useCallback((emblaApi: any) => {
-    setCanScrollPrev(emblaApi.canScrollPrev())
-    setCanScrollNext(emblaApi.canScrollNext())
-  }, [])
+  const fetchAllEvents = React.useCallback(async () => {
+    try {
+      const eventsRef = collection(db, "events");
+      const querySnapshot = await getDocs(eventsRef);
+      const fetchedEvents = querySnapshot.docs.map((doc) => ({
+        id: doc.id, // Firestore document ID
+        ...doc.data(), // Event data
+      }));
+      setEvents(fetchedEvents);
+    } catch (error) {
+      console.error("Error fetching all events:", error);
+    }
+  }, []);
 
   React.useEffect(() => {
-    if (!emblaApi) return
+    fetchAllEvents();
+  }, [fetchAllEvents]);
 
-    onSelect(emblaApi)
-    emblaApi.on('select', onSelect)
-    emblaApi.on('reInit', onSelect)
-  }, [emblaApi, onSelect])
+  const scrollPrev = React.useCallback(() => {
+    if (emblaApi) emblaApi.scrollPrev();
+  }, [emblaApi]);
+
+  const scrollNext = React.useCallback(() => {
+    if (emblaApi) emblaApi.scrollNext();
+  }, [emblaApi]);
+
+  const onSelect = React.useCallback((emblaApi: any) => {
+    setCanScrollPrev(emblaApi.canScrollPrev());
+    setCanScrollNext(emblaApi.canScrollNext());
+  }, []);
+
+  React.useEffect(() => {
+    if (!emblaApi) return;
+
+    onSelect(emblaApi);
+    emblaApi.on("select", onSelect);
+    emblaApi.on("reInit", onSelect);
+  }, [emblaApi, onSelect]);
 
   return (
     <div className="relative">
       <div className="overflow-hidden rounded-2xl" ref={emblaRef}>
         <div className="flex gap-6">
           {events.map((event) => (
-            <div key={event.uid} className="flex-[0_0_350px] min-w-0">
-              <EventCard 
-                event={event} 
-                onEdit={() => setEditingEvent(event)}
-              />
+            <div key={event.id} className="flex-[0_0_350px] min-w-0">
+              <EventCard event={event} onEdit={() => setEditingEvent(event)} />
             </div>
           ))}
         </div>
@@ -128,13 +130,12 @@ export function EventCarousel() {
         </Button>
       )}
       {editingEvent && (
-        <EditEventModal 
-          event={editingEvent} 
-          isOpen={!!editingEvent} 
-          onClose={() => setEditingEvent(null)} 
+        <EditEventModal
+          event={editingEvent}
+          isOpen={!!editingEvent}
+          onClose={() => setEditingEvent(null)}
         />
       )}
     </div>
-  )
+  );
 }
-

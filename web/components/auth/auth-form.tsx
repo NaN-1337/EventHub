@@ -11,10 +11,10 @@ import { Label } from "@/components/ui/label"
 import { Icons } from "@/components/icons"
 import Link from "next/link"
 import { motion, AnimatePresence } from "framer-motion"
+import { v4 as uuidv4 } from "uuid" // Add this import to generate random UUIDs
 import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
-  sendEmailVerification,
   GoogleAuthProvider,
   signInWithPopup,
   onAuthStateChanged,
@@ -110,17 +110,36 @@ export function AuthForm({ mode }: AuthFormProps) {
   const saveUserToFirestore = async (
     email: string,
     fullName: string,
-    username: string
+    username: string,
   ) => {
-    const userDocRef = doc(collection(db, "users"), email)
+    const userUid = uuidv4(); // Generate a unique UID for the user
+    const docUid = uuidv4(); // Generate a unique UID for the document
+  
+    const userDocRef = doc(collection(db, "users"), docUid);
     await setDoc(userDocRef, {
-      fullName,
-      username,
-      email,
-      interests: [], // Initialize as empty array
-      friends: [], // Initialize as empty array
-    })
-  }
+      uid: userUid,
+      name: fullName,
+      email: email,
+      username: username,
+      location: "",
+      gender: "",
+      preferences: {
+        music: [],
+        sports: [],
+        travel: [],
+        culture: [],
+        community_involvement: [],
+        entertainment: [],
+      },
+      xpPoints: 0,
+      donationPoints: 0,
+      level: 0,
+      friends: [],
+      joinedEvents: [],
+      createdEvents: [],
+      tickets: {},
+    });
+  };
 
   // Generate unique username
   const generateUniqueUsername = async (baseUsername: string) => {
@@ -171,55 +190,33 @@ export function AuthForm({ mode }: AuthFormProps) {
   // Handle email-based authentication
   async function handleEmailAuth(
     mode: string,
-    data: {
-      email: string
-      password: string
-      fullName?: string
-      username?: string
-    }
+    data: { email: string; password: string; fullName?: string; username?: string }
   ) {
     try {
-      setAuthError(null)
-      setSuccessMessage(null)
+      setAuthError(null);
 
       if (mode === 'login') {
-        const userCredential = await signInWithEmailAndPassword(
-          auth,
-          data.email,
-          data.password
-        )
-        if (!userCredential.user.emailVerified) {
-          throw { code: "auth/unverified-email" }
-        }
-        router.push('/dashboard') // Redirect to dashboard after successful login
+        await signInWithEmailAndPassword(auth, data.email, data.password);
+        router.push('/dashboard'); // Redirect to dashboard after login
       } else {
-        const { email, password, fullName, username } = data
-        // No need to generate unique username here; it's handled during onBlur
-        await createUserWithEmailAndPassword(auth, email, password)
-        await saveUserToFirestore(email, fullName!, username!)
-
-        await sendEmailVerification(auth.currentUser!)
-        setSuccessMessage(
-          "A verification email has been sent. Please check your inbox to activate your account."
-        )
-        setCountdown(5)
+        const { email, password, fullName, username } = data;
+        await createUserWithEmailAndPassword(auth, email, password);
+        await saveUserToFirestore(email, fullName!, username!);
+        router.push('/dashboard'); // Redirect to dashboard after registration
       }
     } catch (error: unknown) {
-      const firebaseError = error as { code: string }
+      const firebaseError = error as { code: string };
       setAuthError(
-        firebaseError.code === "auth/unverified-email"
-          ? "Your account has not been activated. Please check your email."
-          : firebaseError.code === "auth/user-not-found" ||
-            firebaseError.code === "auth/wrong-password"
+        firebaseError.code === "auth/user-not-found" || firebaseError.code === "auth/wrong-password"
           ? "Incorrect email or password. Please try again."
           : firebaseError.code === "auth/email-already-in-use"
           ? "This email is already registered. Please log in."
           : firebaseError.code === "auth/weak-password"
           ? "Password is too weak. Please use a stronger password."
-          : "User email or password is incorrect. Please try again."
-      )
+          : "An unexpected error occurred. Please try again."
+      );
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
   }
 
