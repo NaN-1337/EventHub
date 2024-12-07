@@ -1,28 +1,49 @@
-"use client"
+"use client";
 
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Calendar, MapPin, Users, Award } from 'lucide-react'
-import { Badge } from "@/components/ui/badge"
+import { useState, useEffect } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Calendar, MapPin, Users, Award } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 interface ViewEventModalProps {
   event: {
-    id: string
-    name: string
-    description: string
-    location: string
-    date: string
-    organizer: string
-    points: number
-    category: string
-    subcategory: string
-  }
-  isOpen: boolean
-  onClose: () => void
-  onEdit: () => void
+    id: string; // Event ID like "1", "2", "3"
+    name: string;
+    description: string;
+    location: string;
+    date: string;
+    organizer: string;
+    points: number;
+    category: string;
+    subcategory: string;
+  };
+  isOpen: boolean;
+  onClose: () => void;
+  onEdit: () => void;
 }
 
 export function ViewEventModal({ event, isOpen, onClose, onEdit }: ViewEventModalProps) {
+  const [eventImage, setEventImage] = useState<string>("");
+
+  useEffect(() => {
+    const fetchEventImage = async () => {
+      const imageMap: Record<string, string> = {
+        "1": "/events-images/1.png",
+        "2": "/events-images/2.png",
+        "3": "/events-images/3.png",
+        // Extend mappings dynamically as needed.
+      };
+
+      // Use event.id directly as it's like "1", "2", etc.
+      const imagePath = imageMap[event.id] || "/events-images/default.png";
+      console.log(`Mapped image path for event ID ${event.id}: ${imagePath}`);
+      setEventImage(imagePath);
+    };
+
+    fetchEventImage();
+  }, [event.id]);
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[600px] bg-gray-100 rounded-2xl max-h-[80vh] overflow-y-auto">
@@ -31,8 +52,14 @@ export function ViewEventModal({ event, isOpen, onClose, onEdit }: ViewEventModa
         </DialogHeader>
         <div className="space-y-4">
           <img
-            src={`https://source.unsplash.com/random/800x400?${event.category}`}
-            alt={event.name}
+            src={eventImage}
+            alt={`Image for ${event.name}`}
+            onError={(e) => {
+              console.log(
+                `Image load failed for event ID ${event.id}. Falling back to default image.`
+              );
+              e.currentTarget.src = "/events-images/default.png"; // Fallback to default
+            }}
             className="w-full h-48 object-cover rounded-lg"
           />
           <p className="text-[#40514E]">{event.description}</p>
@@ -61,12 +88,15 @@ export function ViewEventModal({ event, isOpen, onClose, onEdit }: ViewEventModa
             </Badge>
           </div>
           <div className="flex justify-end gap-2">
-            <Button onClick={onClose} variant="outline">Close</Button>
-            <Button onClick={onEdit} className="bg-[#11999E] hover:bg-[#11999E]/90 text-white">Edit Event</Button>
+            <Button onClick={onClose} variant="outline">
+              Close
+            </Button>
+            <Button onClick={onEdit} className="bg-[#11999E] hover:bg-[#11999E]/90 text-white">
+              Edit Event
+            </Button>
           </div>
         </div>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
-
