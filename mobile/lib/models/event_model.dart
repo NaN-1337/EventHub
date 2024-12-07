@@ -8,6 +8,7 @@ class EventModel {
   final String location;
   final String date;
   final String organizer;
+  final String organizerName;
   final int points;
   final List<String> participants;
   final String category;
@@ -21,6 +22,7 @@ class EventModel {
     required this.location,
     required this.date,
     required this.organizer,
+    required this.organizerName,
     required this.points,
     required this.participants,
     required this.category,
@@ -36,6 +38,7 @@ class EventModel {
       "location": location,
       "date": date,
       "organizer": organizer,
+      "organizer_name": organizerName,
       "points": points,
       "participants": participants,
       "category": category,
@@ -46,6 +49,8 @@ class EventModel {
   // Factory method to create an EventModel from Firestore document snapshot
   factory EventModel.fromDocumentSnapshot(DocumentSnapshot doc) {
     final data = doc.data()! as Map<String, dynamic>;
+
+    // logger.i("Converting event with name: ${data["name"]}");
 
     List<String> participants = (data["participants"] as List<dynamic>)
         .map((e) => e.toString())
@@ -59,6 +64,7 @@ class EventModel {
       location: data["location"],
       date: data["date"],
       organizer: data["organizer"],
+      organizerName: data["organizer_name"],
       points: data["points"],
       participants: participants,
       category: data["category"],

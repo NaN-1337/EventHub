@@ -50,9 +50,12 @@ class DataFile {
 
   static List<ModalEventCategory> eventCategoryList = [
     ModalEventCategory("", "All"),
-    ModalEventCategory("event1.png", "Art"),
-    ModalEventCategory("event2.png", "Music"),
-    ModalEventCategory("event3.png", "Sport")
+    ModalEventCategory("music.png", "Music"),
+    ModalEventCategory("event3.png", "Sports"),
+    ModalEventCategory("travel.png", "Travel"),
+    ModalEventCategory("culture.png", "Culture"),
+    ModalEventCategory("community_involvement.png", "Community Involvement"),
+    ModalEventCategory("entertainment.png", "Entertainment"),
   ];
 
   static List<ModalTrendingEvent> trendingEventList = [

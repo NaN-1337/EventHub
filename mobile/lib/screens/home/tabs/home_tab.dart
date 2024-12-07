@@ -12,11 +12,17 @@ import 'package:mobile/utils/constant.dart';
 import 'package:mobile/utils/data_file.dart';
 import 'package:mobile/utils/globals.dart';
 import 'package:mobile/utils/modal/modal_event_category.dart';
-import 'package:mobile/utils/modal/modal_feature_event.dart';
-import 'package:mobile/utils/modal/modal_popular_event.dart';
-import 'package:mobile/utils/modal/modal_trending_event.dart';
 import 'package:mobile/utils/widget_utils.dart';
 import 'package:provider/provider.dart';
+
+Map<String, String> firebaseCategory = {
+  "Music": "music",
+  "Sports": "sports",
+  "Travel": "travel",
+  "Culture": "culture",
+  "Community Involvement": "community_involvement",
+  "Entertainment": "entertainment",
+};
 
 class HomeTab extends StatefulWidget {
   const HomeTab({super.key});
@@ -28,9 +34,7 @@ class HomeTab extends StatefulWidget {
 class _HomeTabState extends State<HomeTab> {
   HomeScreenController controller = Get.put(HomeScreenController());
   List<ModalEventCategory> eventCategoryLists = DataFile.eventCategoryList;
-  List<ModalTrendingEvent> trendingEventLists = DataFile.trendingEventList;
-  List<ModalPopularEvent> popularEventLists = DataFile.popularEventList;
-  List<ModalFeatureEvent> featureEventLists = DataFile.featureEventList;
+  String selectedCategory = "All";
 
   @override
   void initState() {
@@ -57,6 +61,9 @@ class _HomeTabState extends State<HomeTab> {
     List<EventModel> recommendedEvents = [];
     if (currentUser != null && currentUser.preferences.isNotEmpty) {
       recommendedEvents = eventRepository.getRecommendedEvents(events, currentUser.preferences);
+      if (selectedCategory != "All") {
+        recommendedEvents = recommendedEvents.where((event) => event.category == selectedCategory).toList();
+      }
     }
 
     List<EventModel> feelingEvents = [];
@@ -76,6 +83,7 @@ class _HomeTabState extends State<HomeTab> {
               primary: true,
               shrinkWrap: true,
               children: [
+                // FEELING SECTION
                 getPaddingWidget(
                   EdgeInsets.symmetric(horizontal: 20.h),
                   Row(
@@ -96,18 +104,19 @@ class _HomeTabState extends State<HomeTab> {
                 ),
                 getVerSpace(12.h),
                 if (feelingEvents.isNotEmpty)
-                  buildFeelingEventList(context)
+                  buildFeelingEventList(context, feelingEvents)
                 else
                   feelingsPlaceholder(),
 
                 getVerSpace(24.h),
 
+                // RECOMMENDED SECTION
                 getPaddingWidget(
                   EdgeInsets.symmetric(horizontal: 20.h),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      getCustomFont("Trending Events", 20.sp, Colors.black, 1,
+                      getCustomFont("Recommended Events", 20.sp, Colors.black, 1,
                           fontWeight: FontWeight.w700, txtHeight: 1.5.h),
                       GestureDetector(
                         onTap: () {
@@ -121,17 +130,17 @@ class _HomeTabState extends State<HomeTab> {
                   ),
                 ),
                 getVerSpace(12.h),
-                buildTrendingCategoryList(),
-
+                buildRecommendedCategoryList(),
                 getVerSpace(20.h),
+                buildRecommendedEventList(recommendedEvents),
 
-                buildTrendingEventList(),
+                // ALL SECTION
                 getPaddingWidget(
                   EdgeInsets.symmetric(horizontal: 20.h),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      getCustomFont("Popular Events", 20.sp, Colors.black, 1,
+                      getCustomFont("All Events", 20.sp, Colors.black, 1,
                           fontWeight: FontWeight.w700, txtHeight: 1.5.h),
                       GestureDetector(
                         onTap: () {
@@ -145,7 +154,7 @@ class _HomeTabState extends State<HomeTab> {
                   ),
                 ),
                 getVerSpace(12.h),
-                buildPopularEventList(),
+                buildAllEventList(events),
                 getVerSpace(40.h),
               ],
             ))
@@ -153,14 +162,14 @@ class _HomeTabState extends State<HomeTab> {
     );
   }
 
-  ListView buildPopularEventList() {
+  ListView buildAllEventList(List<EventModel> events) {
     return ListView.builder(
       padding: EdgeInsets.symmetric(horizontal: 20.h),
-      itemCount: popularEventLists.length,
+      itemCount: (events.length > 5) ? 5 : events.length,
       primary: false,
       shrinkWrap: true,
       itemBuilder: (context, index) {
-        ModalPopularEvent modalPopularEvent = popularEventLists[index];
+        EventModel event = events[index];
         return Container(
           margin: EdgeInsets.only(bottom: 20.h),
           decoration: BoxDecoration(
@@ -172,25 +181,30 @@ class _HomeTabState extends State<HomeTab> {
                     offset: const Offset(0, 8))
               ],
               borderRadius: BorderRadius.circular(22.h)),
-          padding:
-              EdgeInsets.only(top: 7.h, left: 7.h, bottom: 6.h, right: 20.h),
+          padding: EdgeInsets.only(top: 14.h, left: 7.h, bottom: 13.h, right: 20.h),
           child: Row(
             children: [
               Expanded(
                 child: Row(
                   children: [
-                    getAssetImage(modalPopularEvent.image ?? "",
-                        width: 82.h, height: 82.h),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(15.0),
+                      child: getAssetImage((int.tryParse(event.uid)! >= 1 && int.tryParse(event.uid)! <= 14) ? "${event.uid}.png" : "default.png",
+                          width: 60.h, height: 60.h, boxFit: BoxFit.cover),
+                    ),
                     getHorSpace(10.h),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        getCustomFont(modalPopularEvent.name ?? "", 18.sp,
-                            Colors.black, 1,
-                            fontWeight: FontWeight.w600, txtHeight: 1.5.h),
+                        SizedBox(
+                          width: 200.w,
+                          child: getCustomFont(event.name, 18.sp,
+                              Colors.black, 1,
+                              fontWeight: FontWeight.w600, txtHeight: 1.5.h),
+                        ),
                         getVerSpace(4.h),
                         getCustomFont(
-                            modalPopularEvent.date ?? '', 15.sp, greyColor, 1,
+                            event.date, 15.sp, greyColor, 1,
                             fontWeight: FontWeight.w500, txtHeight: 1.46.h)
                       ],
                     )
@@ -205,7 +219,7 @@ class _HomeTabState extends State<HomeTab> {
                 alignment: Alignment.center,
                 padding: EdgeInsets.symmetric(horizontal: 12.h),
                 child: getCustomFont(
-                    modalPopularEvent.price ?? '', 15.sp, accentColor, 1,
+                    "${event.points} Points", 15.sp, accentColor, 1,
                     fontWeight: FontWeight.w600, txtHeight: 1.46.h),
               )
             ],
@@ -215,17 +229,17 @@ class _HomeTabState extends State<HomeTab> {
     );
   }
 
-  SizedBox buildTrendingEventList() {
+  SizedBox buildRecommendedEventList(List<EventModel> recommendedEvents) {
     return SizedBox(
       height: 289.h,
       child: ListView.builder(
         primary: false,
         shrinkWrap: true,
-        itemCount: trendingEventLists.length,
+        itemCount: (recommendedEvents.length > 5) ? 5 : recommendedEvents.length,
         physics: const BouncingScrollPhysics(),
         scrollDirection: Axis.horizontal,
         itemBuilder: (context, index) {
-          ModalTrendingEvent modalTrendingEvent = trendingEventLists[index];
+          EventModel event = recommendedEvents[index];
           return GestureDetector(
             onTap: () {
               // Constant.sendToNext(context, Routes.featuredEventDetailRoute);
@@ -239,8 +253,7 @@ class _HomeTabState extends State<HomeTab> {
                     decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(22.h),
                         image: DecorationImage(
-                            image: AssetImage(Constant.assetImagePath +
-                                modalTrendingEvent.image.toString()),
+                            image: AssetImage((int.tryParse(event.uid)! >= 1 && int.tryParse(event.uid)! <= 14) ? "${Constant.assetImagePath}${event.uid}.png" : "${Constant.assetImagePath}default.png"),
                             fit: BoxFit.fill)),
                     height: 170.h,
                     width: 248.h,
@@ -253,7 +266,7 @@ class _HomeTabState extends State<HomeTab> {
                               borderRadius: BorderRadius.circular(12.h)),
                           padding: EdgeInsets.symmetric(
                               vertical: 4.h, horizontal: 10.h),
-                          child: getCustomFont(modalTrendingEvent.date ?? "",
+                          child: getCustomFont(event.date,
                               13.sp, Colors.white, 1,
                               fontWeight: FontWeight.w600, txtHeight: 1.69.h),
                         ),
@@ -278,7 +291,7 @@ class _HomeTabState extends State<HomeTab> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           getVerSpace(16.h),
-                          getCustomFont(modalTrendingEvent.name ?? "", 18.sp,
+                          getCustomFont(event.name, 18.sp,
                               Colors.black, 1,
                               fontWeight: FontWeight.w600, txtHeight: 1.5.h),
                           getVerSpace(3.h),
@@ -287,33 +300,9 @@ class _HomeTabState extends State<HomeTab> {
                               getSvgImage("location.svg",
                                   width: 20.h, height: 20.h, color: greyColor),
                               getHorSpace(5.h),
-                              getCustomFont(modalTrendingEvent.location ?? "",
+                              getCustomFont(event.location,
                                   15.sp, greyColor, 1,
                                   fontWeight: FontWeight.w500, txtHeight: 1.5.h)
-                            ],
-                          ),
-                          getVerSpace(10.h),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Row(
-                                children: [
-                                  getAssetImage(
-                                      modalTrendingEvent.sponser ?? '',
-                                      height: 30.h,
-                                      width: 30.h),
-                                  getHorSpace(8.h),
-                                  getCustomFont("Sponser", 15.sp, greyColor, 1,
-                                      fontWeight: FontWeight.w500,
-                                      txtHeight: 1.46.h)
-                                ],
-                              ),
-                              getButton(context, accentColor, "Join",
-                                  Colors.white, () {}, 14.sp,
-                                  weight: FontWeight.w700,
-                                  buttonHeight: 40.h,
-                                  borderRadius: BorderRadius.circular(14.h),
-                                  buttonWidth: 70.h)
                             ],
                           ),
                           getVerSpace(16.h),
@@ -331,7 +320,7 @@ class _HomeTabState extends State<HomeTab> {
     );
   }
 
-  SizedBox buildTrendingCategoryList() {
+  SizedBox buildRecommendedCategoryList() {
     return SizedBox(
       height: 50.h,
       child: ListView.builder(
@@ -344,6 +333,8 @@ class _HomeTabState extends State<HomeTab> {
           return GestureDetector(
             onTap: () {
               controller.onChange(index.obs);
+              selectedCategory = firebaseCategory[modalEventCategory.name] ?? "All";
+              setState(() {});
             },
             child: GetX<HomeScreenController>(
               init: HomeScreenController(),
@@ -482,7 +473,7 @@ class _HomeTabState extends State<HomeTab> {
     );
   }
 
-  SizedBox buildFeelingEventList(BuildContext context) {
+  SizedBox buildFeelingEventList(BuildContext context, List<EventModel> feelingEvents) {
     return SizedBox(
       height: 196.h,
       child: ListView.builder(
@@ -490,9 +481,9 @@ class _HomeTabState extends State<HomeTab> {
         shrinkWrap: true,
         physics: const BouncingScrollPhysics(),
         scrollDirection: Axis.horizontal,
-        itemCount: featureEventLists.length,
+        itemCount: (feelingEvents.length > 5) ? 5 : feelingEvents.length,
         itemBuilder: (context, index) {
-          ModalFeatureEvent modalFeatureEvent = featureEventLists[index];
+          EventModel event = feelingEvents[index];
           return Container(
             width: 374.h,
             height: 196.h,
@@ -500,8 +491,7 @@ class _HomeTabState extends State<HomeTab> {
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(22.h),
               image: DecorationImage(
-                  image: AssetImage(Constant.assetImagePath +
-                      modalFeatureEvent.image.toString()),
+                  image: AssetImage((int.tryParse(event.uid)! >= 1 && int.tryParse(event.uid)! <= 14) ? "${Constant.assetImagePath}${event.uid}.png" : "${Constant.assetImagePath}default.png"),
                   fit: BoxFit.fill),
             ),
             child: GestureDetector(
@@ -531,7 +521,7 @@ class _HomeTabState extends State<HomeTab> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        getCustomFont(modalFeatureEvent.name ?? "", 20.sp,
+                        getCustomFont(event.name, 20.sp,
                             Colors.white, 1,
                             fontWeight: FontWeight.w700, txtHeight: 1.5.h),
                         getVerSpace(4.h),
@@ -540,7 +530,7 @@ class _HomeTabState extends State<HomeTab> {
                             getSvgImage("location.svg",
                                 width: 20.h, height: 20.h),
                             getHorSpace(5.h),
-                            getCustomFont(modalFeatureEvent.location ?? "",
+                            getCustomFont(event.location,
                                 15.sp, Colors.white, 1,
                                 fontWeight: FontWeight.w500, txtHeight: 1.5.h),
                           ],
