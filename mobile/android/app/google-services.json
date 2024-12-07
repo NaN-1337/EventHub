@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "1055556258540",
+    "project_id": "hackitall-db-2024-70ec3",
+    "storage_bucket": "hackitall-db-2024-70ec3.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1055556258540:android:31c4e96d0d2a3b36d533c9",
+        "android_client_info": {
+          "package_name": "com.example.mobile"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1055556258540-pbo2i5o1kq14i8sds87328pemeoj7v0e.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAuNweHb8eMFQUmEGpUmXrsWXkyVu6m8kY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1055556258540-pbo2i5o1kq14i8sds87328pemeoj7v0e.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
