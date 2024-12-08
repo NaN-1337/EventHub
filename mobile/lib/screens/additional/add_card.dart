@@ -5,10 +5,15 @@ import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:mobile/models/event_model.dart';
+import 'package:mobile/models/user_model.dart';
+import 'package:mobile/providers/user_provider.dart';
+import 'package:mobile/screens/additional/ticket_confirm_dialog.dart';
 import 'package:mobile/screens/onboarding/controller.dart';
 import 'package:mobile/utils/color_data.dart';
 import 'package:mobile/utils/constant.dart';
+import 'package:mobile/utils/globals.dart';
 import 'package:mobile/utils/widget_utils.dart';
+import 'package:provider/provider.dart';
 
 class AddCardScreen extends StatefulWidget {
   const AddCardScreen({super.key});
@@ -26,13 +31,19 @@ class _AddCardScreenState extends State<AddCardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    
+    Map<String, dynamic> args = Get.arguments;
 
-    EventModel event = Get.arguments;
+    EventModel event = args['event'];
+    int numberOfTickets = args['numberOfTickets'];
 
-    controller.cardNameController.text = "Jenny Wilson";
-    controller.cardNumberController.text = "1234567891012345021";
-    controller.dateController.text = "12/24";
-    controller.cvvController.text = "123";
+    final userProvider = Provider.of<UserProvider>(context);
+    UserModel? currentUser = userProvider.currentUser;
+
+    controller.cardNameController.text = "";
+    controller.cardNumberController.text = "";
+    controller.dateController.text = "";
+    controller.cvvController.text = "";
     setStatusBarColor(Colors.white);
     return WillPopScope(
       onWillPop: () async {
@@ -46,7 +57,7 @@ class _AddCardScreenState extends State<AddCardScreen> {
           () {
             backClick();
           },
-          title: getCustomFont("Edit Card", 24.sp, Colors.black, 1,
+          title: getCustomFont("Card Details", 24.sp, Colors.black, 1,
               fontWeight: FontWeight.w700, textAlign: TextAlign.center),
         ),
         body: SafeArea(
@@ -110,62 +121,6 @@ class _AddCardScreenState extends State<AddCardScreen> {
                                     controller.dateController,
                                     isEnable: false,
                                     height: 60.h,
-                                    onChanged: (value) {
-                                      setState(() {
-                                        value =
-                                            value.replaceAll(RegExp(r"\D"), "");
-                                        switch (value.length) {
-                                          case 0:
-                                            controller
-                                                    .dateController.selection =
-                                                const TextSelection.collapsed(
-                                                    offset: 0);
-                                            break;
-                                          case 1:
-                                            controller.dateController.text =
-                                                "$value/";
-                                            controller
-                                                    .dateController.selection =
-                                                const TextSelection.collapsed(
-                                                    offset: 1);
-                                            break;
-                                          case 2:
-                                            controller.dateController.text =
-                                                "$value/";
-                                            controller
-                                                    .dateController.selection =
-                                                const TextSelection.collapsed(
-                                                    offset: 2);
-                                            break;
-                                          case 3:
-                                            controller.dateController.text =
-                                                "${value.substring(0, 2)}/${value.substring(2)}";
-                                            controller
-                                                    .dateController.selection =
-                                                const TextSelection.collapsed(
-                                                    offset: 4);
-                                            break;
-                                          case 4:
-                                            controller.dateController.text =
-                                                "${value.substring(0, 2)}/${value.substring(2, 4)}";
-                                            controller
-                                                    .dateController.selection =
-                                                const TextSelection.collapsed(
-                                                    offset: 5);
-                                            break;
-                                        }
-                                        if (value.length > 4) {
-                                          controller.dateController.text =
-                                              "${value.substring(0, 2)}/${value.substring(2, 4)}";
-                                          controller.dateController.selection =
-                                              const TextSelection.collapsed(
-                                                  offset: 5);
-                                        }
-                                      });
-                                    },
-                                    inputFormatters: [
-                                      FilteringTextInputFormatter.digitsOnly,
-                                    ],
                                   ),
                                 ],
                               )),
@@ -181,7 +136,7 @@ class _AddCardScreenState extends State<AddCardScreen> {
                                   getVerSpace(4.h),
                                   getDefaultTextFiledWithLabel(
                                     context,
-                                    "Enter cvv",
+                                    "Enter CVV",
                                     controller.cvvController,
                                     isEnable: false,
                                     height: 60.h,
@@ -199,8 +154,16 @@ class _AddCardScreenState extends State<AddCardScreen> {
                   )),
               getPaddingWidget(
                 EdgeInsets.symmetric(horizontal: 20.h),
-                getButton(context, accentColor, "Save Card", Colors.white, () {
-                  // backClick();
+                getButton(context, accentColor, "Purchase", Colors.white, () {
+                  for (int i = 0; i < numberOfTickets; i++) {
+                    currentUser!.tickets.add(event.uid);
+                  }
+                  userRepository.updateUserField(currentUser!.docId!, "tickets", currentUser.tickets);
+                  showDialog(
+                      builder: (context) {
+                        return const TicketConfirmDialog();
+                      },
+                      context: context);
                 }, 18.sp,
                     weight: FontWeight.w700,
                     buttonHeight: 60.h,

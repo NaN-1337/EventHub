@@ -92,7 +92,7 @@ class _BuyTicketState extends State<BuyTicket> {
           ),
           getVerSpace(30.h),
           getButton(context, accentColor, "Checkout", Colors.white, () {
-            Constant.sendToNext(context, Routes.addCardRoute, arguments: event);
+            Constant.sendToNext(context, Routes.addCardRoute, arguments: {"event": event, "numberOfTickets": controller.count.value});
           }, 18.sp,
               weight: FontWeight.w700,
               buttonHeight: 60.h,
