@@ -18,7 +18,7 @@ const navigation = [
     icon: User,
   },
   {
-    name: "Friends",
+    name: "Co-Workers",
     href: "/friends",
     icon: Users,
   },

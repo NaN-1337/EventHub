@@ -14,10 +14,17 @@ interface User {
   avatar: string
 }
 
+interface Group {
+  id: string
+  name: string
+  participants: string[]
+  avatar?: string
+}
+
 interface Message {
   id: string
+  conversationId: string
   senderId: string
-  receiverId: string
   content: string
   timestamp: any
 }
@@ -25,11 +32,12 @@ interface Message {
 interface ChatAreaProps {
   currentUser: User | null
   selectedUser: User | null
+  selectedGroup: Group | null
   messages: Message[]
   onSendMessage: (content: string) => void
 }
 
-export function ChatArea({ currentUser, selectedUser, messages, onSendMessage }: ChatAreaProps) {
+export function ChatArea({ currentUser, selectedUser, selectedGroup, messages, onSendMessage }: ChatAreaProps) {
   const scrollRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -40,17 +48,24 @@ export function ChatArea({ currentUser, selectedUser, messages, onSendMessage }:
   }, [messages])
 
   const handleSend = () => {
-    if (!inputRef.current?.value.trim() || !selectedUser || !currentUser) return
+    if (!inputRef.current?.value.trim()) return
     onSendMessage(inputRef.current.value)
     inputRef.current.value = ''
   }
 
-  if (!selectedUser) {
+  const isGroupChat = !!selectedGroup
+  const chatTitle = isGroupChat
+    ? selectedGroup?.name
+    : selectedUser
+    ? `Chat with ${selectedUser.name}`
+    : "Select a conversation"
+
+  if (!selectedUser && !selectedGroup) {
     return (
       <div className="flex-1 flex items-center justify-center text-gray-500 bg-white">
         <div className="text-center">
           <h3 className="text-2xl font-semibold mb-2">Welcome to the Chat</h3>
-          <p>Select a user to start chatting</p>
+          <p>Select a user or group to start chatting</p>
         </div>
       </div>
     )
@@ -58,6 +73,9 @@ export function ChatArea({ currentUser, selectedUser, messages, onSendMessage }:
 
   return (
     <div className="flex-1 flex flex-col bg-white">
+      <div className="p-4 border-b border-gray-200">
+        <h2 className="font-semibold text-xl">{chatTitle}</h2>
+      </div>
       <ScrollArea ref={scrollRef} className="flex-1 p-4">
         <div className="space-y-4">
           {messages.map((message, index) => {
@@ -75,15 +93,18 @@ export function ChatArea({ currentUser, selectedUser, messages, onSendMessage }:
                   <Avatar className="w-8 h-8">
                     <AvatarImage
                       src={
-                        isCurrentUser
+                        isGroupChat
+                          ? // In group chat, ideally fetch user by senderId for accurate avatar.
+                            `https://avatar.vercel.sh/${message.senderId}`
+                          : isCurrentUser
                           ? currentUser?.avatar
                           : selectedUser?.avatar
                       }
                     />
                     <AvatarFallback>
-                      {(isCurrentUser ? currentUser?.name : selectedUser?.name)
-                        ?.substring(0, 2)
-                        .toUpperCase()}
+                      {isGroupChat
+                        ? "?"
+                        : (isCurrentUser ? currentUser?.name : selectedUser?.name)?.substring(0, 2).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                 )}
