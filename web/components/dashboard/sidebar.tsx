@@ -19,7 +19,7 @@ const navigation = [
   },
   {
     name: "Friends",
-    href: "/dashboard/friends",
+    href: "/friends",
     icon: Users,
   },
   {
