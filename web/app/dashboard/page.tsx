@@ -12,8 +12,10 @@ export default function DashboardPage() {
         <Header />
         <main className="flex-1 overflow-auto p-8">
           <EventsCenter />
-          <div className="mt-8 grid grid-cols-[1fr_300px] gap-8">
+          <div className="mt-8">
             <EventList />
+          </div>
+          <div>
             <EventStatistic />
           </div>
         </main>
