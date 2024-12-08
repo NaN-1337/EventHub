@@ -208,15 +208,12 @@ class _BuyTicketState extends State<BuyTicket> {
                         fontWeight: FontWeight.w500, txtHeight: 1.5.h)
                   ],
                 ),
-                GetX<PaymentController>(
-                  builder: (controller) => getSvgImage(
-                      selectedNGO == 0
-                          ? "checkRadio.svg"
-                          : "uncheckRadio.svg",
-                      width: 24.h,
-                      height: 24.h),
-                  init: PaymentController(),
-                )
+                getSvgImage(
+                  selectedNGO == 0
+                      ? "checkRadio.svg"
+                      : "uncheckRadio.svg",
+                  width: 24.h,
+                  height: 24.h),
               ],
             ),
           ),
@@ -246,15 +243,12 @@ class _BuyTicketState extends State<BuyTicket> {
                         fontWeight: FontWeight.w500, txtHeight: 1.5.h)
                   ],
                 ),
-                GetX<PaymentController>(
-                  builder: (controller) => getSvgImage(
-                      selectedNGO == 1
-                          ? "checkRadio.svg"
-                          : "uncheckRadio.svg",
-                      width: 24.h,
-                      height: 24.h),
-                  init: PaymentController(),
-                )
+                getSvgImage(
+                  selectedNGO == 1
+                      ? "checkRadio.svg"
+                      : "uncheckRadio.svg",
+                  width: 24.h,
+                  height: 24.h),
               ],
             ),
           ),
@@ -284,15 +278,12 @@ class _BuyTicketState extends State<BuyTicket> {
                         fontWeight: FontWeight.w500, txtHeight: 1.5.h)
                   ],
                 ),
-                GetX<PaymentController>(
-                  builder: (controller) => getSvgImage(
-                      selectedNGO == 2
-                          ? "checkRadio.svg"
-                          : "uncheckRadio.svg",
-                      width: 24.h,
-                      height: 24.h),
-                  init: PaymentController(),
-                )
+                getSvgImage(
+                  selectedNGO == 2
+                      ? "checkRadio.svg"
+                      : "uncheckRadio.svg",
+                  width: 24.h,
+                  height: 24.h),
               ],
             ),
           ),
@@ -322,15 +313,12 @@ class _BuyTicketState extends State<BuyTicket> {
                         fontWeight: FontWeight.w500, txtHeight: 1.5.h)
                   ],
                 ),
-                GetX<PaymentController>(
-                  builder: (controller) => getSvgImage(
-                      selectedNGO == 3
-                          ? "checkRadio.svg"
-                          : "uncheckRadio.svg",
-                      width: 24.h,
-                      height: 24.h),
-                  init: PaymentController(),
-                )
+                getSvgImage(
+                  selectedNGO == 3
+                      ? "checkRadio.svg"
+                      : "uncheckRadio.svg",
+                  width: 24.h,
+                  height: 24.h),
               ],
             ),
           ),
