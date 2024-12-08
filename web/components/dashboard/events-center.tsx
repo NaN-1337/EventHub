@@ -5,6 +5,7 @@ import { Plus } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { EventCarousel } from "./events-carousel"
 import { CreateEventModal } from "./create-event-modal"
+import { EventCarouselByPreferences } from './event-carousel-by-preferences'
 
 export function EventsCenter() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
@@ -22,6 +23,8 @@ export function EventsCenter() {
         </Button>
       </div>
       <EventCarousel />
+      <h2 className="text-2xl mt-6 mb-6 font-bold text-[#40514E]">Recommendations</h2>
+      <EventCarouselByPreferences />
       <CreateEventModal 
         isOpen={isCreateModalOpen} 
         onClose={() => setIsCreateModalOpen(false)} 
