@@ -3,6 +3,7 @@ import { Sidebar } from "@/components/dashboard/sidebar"
 import { EventsCenter } from "@/components/dashboard/events-center"
 import { EventList } from "@/components/dashboard/events-list"
 import { EventStatistic } from "@/components/dashboard/event-statistic"
+import { EventMonthlyEvolution } from "@/components/dashboard/event-evolution"
 
 export default function DashboardPage() {
   return (
@@ -17,6 +18,7 @@ export default function DashboardPage() {
           </div>
           <div>
             <EventStatistic />
+            <EventMonthlyEvolution />
           </div>
         </main>
       </div>

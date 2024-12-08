@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Bell, MessageSquare } from "lucide-react";
+import { Bell, MessageSquare, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -12,7 +12,8 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { auth, db } from "@/lib/firebaseConfig"; // Ensure Firebase Auth and Firestore are initialized
 import { onAuthStateChanged } from "firebase/auth";
-import { collection, query, where, getDocs, doc, onSnapshot } from "firebase/firestore";
+import { collection, query, where, getDocs, onSnapshot } from "firebase/firestore";
+import { CalendarModal } from "./calendar-modal"; // Import the new modal
 
 interface User {
   name: string;
@@ -24,6 +25,7 @@ interface User {
 export function Header() {
   const [user, setUser] = useState<User | null>(null);
   const [userDocId, setUserDocId] = useState<string | null>(null);
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false); // State for calendar modal
 
   useEffect(() => {
     const unsubscribeAuth = onAuthStateChanged(auth, async (authUser) => {
@@ -99,6 +101,16 @@ export function Header() {
             </span>
           </Button>
 
+          {/* Calendar Button */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="rounded-xl text-[#40514E] hover:bg-[#E4F9F5]"
+            onClick={() => setIsCalendarOpen(true)}
+          >
+            <Calendar className="h-5 w-5" />
+          </Button>
+
           {/* User Profile */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -120,6 +132,13 @@ export function Header() {
           </DropdownMenu>
         </div>
       </div>
+
+      {/* Calendar Modal */}
+      <CalendarModal
+        isOpen={isCalendarOpen}
+        onClose={() => setIsCalendarOpen(false)}
+        userEmail={user?.email || ""}
+      />
     </header>
   );
 }
