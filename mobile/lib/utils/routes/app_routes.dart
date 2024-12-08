@@ -13,4 +13,5 @@ abstract class Routes {
   static const homeScreenRoute = "/HomeScreen";
 
   static const moodQuestionsRoute = "/MoodQuestions";
+  static const eventDetailsRoute = "/EventDetailsScreen";
 }

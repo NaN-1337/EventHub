@@ -46,6 +46,29 @@ class EventRepository {
     }).toList();
   }
 
+  List<EventModel> sortEventsByUserMood(List<EventModel> events, Map<String, int> userFeelings) {
+    // filter out events that have the feelings map empty
+    events = events.where((event) => event.feelings.isNotEmpty).toList();
+    // Helper function to calculate the matching score for an event
+    int calculateMatchScore(EventModel event) {
+      int matchScore = 0;
+
+      // Iterate over the factors and calculate the sum of absolute differences
+      userFeelings.forEach((factor, userScore) {
+        if (event.feelings.containsKey(factor)) {
+          matchScore += (userScore - event.feelings[factor]!).abs();
+        }
+      });
+
+      return matchScore;
+    }
+
+    // Sort the events list by match score in ascending order
+    events.sort((a, b) => calculateMatchScore(a).compareTo(calculateMatchScore(b)));
+
+    return events;
+  }
+
   Stream<List<EventModel>> getAllEventsStream() {
     try {
       return _firestore.collection('events').snapshots().map((querySnapshot) {
@@ -69,4 +92,5 @@ class EventRepository {
       return Stream.error('[getAllEventsStream()] $e');
     }
   }
+
 }

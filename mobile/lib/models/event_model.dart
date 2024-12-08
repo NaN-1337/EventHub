@@ -13,6 +13,8 @@ class EventModel {
   final List<String> participants;
   final String category;
   final String subcategory;
+  final Map<String, int> feelings;
+  final String price;
 
   EventModel({
     this.docId,
@@ -27,6 +29,8 @@ class EventModel {
     required this.participants,
     required this.category,
     required this.subcategory,
+    required this.feelings,
+    required this.price,
   });
 
   // Convert EventModel to a Map for Firestore
@@ -43,6 +47,8 @@ class EventModel {
       "participants": participants,
       "category": category,
       "subcategory": subcategory,
+      "feelings": feelings,
+      "price": price,
     };
   }
 
@@ -55,6 +61,7 @@ class EventModel {
     List<String> participants = (data["participants"] as List<dynamic>)
         .map((e) => e.toString())
         .toList();
+    Map<String, int> feelings = (data["feelings"] as Map<dynamic, dynamic>).map((key, value) => MapEntry(key.toString(), value as int));
 
     return EventModel(
       docId: doc.id,
@@ -69,6 +76,8 @@ class EventModel {
       participants: participants,
       category: data["category"],
       subcategory: data["subcategory"],
+      feelings: feelings,
+      price: data["price"],
     );
   }
 }

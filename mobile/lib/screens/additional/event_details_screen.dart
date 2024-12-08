@@ -1,26 +1,45 @@
-import 'package:event_app/app/routes/app_routes.dart';
-import 'package:event_app/base/color_data.dart';
-import 'package:event_app/base/widget_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
+import 'package:mobile/models/event_model.dart';
+import 'package:mobile/models/user_model.dart';
+import 'package:mobile/providers/events_provider.dart';
+import 'package:mobile/providers/user_provider.dart';
+import 'package:mobile/utils/color_data.dart';
+import 'package:mobile/utils/constant.dart';
+import 'package:mobile/utils/dialog_widgets.dart';
+import 'package:mobile/utils/globals.dart';
+import 'package:mobile/utils/routes/app_routes.dart';
+import 'package:mobile/utils/widget_utils.dart';
+import 'package:provider/provider.dart';
 import 'package:readmore/readmore.dart';
 
-import '../../../base/constant.dart';
-
-class FeaturedEventDetail extends StatefulWidget {
-  const FeaturedEventDetail({Key? key}) : super(key: key);
+class EventDetailsScreen extends StatefulWidget {
+  
+  const EventDetailsScreen({super.key});
 
   @override
-  State<FeaturedEventDetail> createState() => _FeaturedEventDetailState();
+  State<EventDetailsScreen> createState() => _EventDetailsScreenState();
 }
 
-class _FeaturedEventDetailState extends State<FeaturedEventDetail> {
+class _EventDetailsScreenState extends State<EventDetailsScreen> {
   void backClick() {
     Constant.backToPrev(context);
   }
 
   @override
   Widget build(BuildContext context) {
+
+    final docUid = Get.arguments;
+
+    final userProvider = Provider.of<UserProvider>(context);
+    UserModel? currentUser = userProvider.currentUser;
+
+    final eventsProvider = Provider.of<EventsProvider>(context);
+    List<EventModel> events = eventsProvider.events;
+
+    EventModel? event = events.firstWhere((element) => element.uid == docUid);
+
     return WillPopScope(
         onWillPop: () async {
           backClick();
@@ -37,16 +56,16 @@ class _FeaturedEventDetailState extends State<FeaturedEventDetail> {
                   flex: 1,
                   child: ListView(
                     children: [
-                      buildImageWidget(),
+                      buildImageWidget(event),
                       getVerSpace(77.h),
-                      buildTicketPrice(),
+                      buildTicketPrice(event),
                       getVerSpace(20.h),
-                      buildFollowWidget(context),
+                      buildFollowWidget(context, event),
                       getVerSpace(20.h),
                       getPaddingWidget(
                         EdgeInsets.symmetric(horizontal: 20.h),
                         ReadMoreText(
-                          'A news conference is often held when an organization wants members of the press to get an announcement simultaneously. The in-person events A news conference is often held when an organization wants members of the press to get an announcement ',
+                          event.description,
                           trimLines: 3,
                           trimMode: TrimMode.Line,
                           trimCollapsedText: 'Read more...',
@@ -69,7 +88,7 @@ class _FeaturedEventDetailState extends State<FeaturedEventDetail> {
                       getVerSpace(30.h),
                       buildLocationWidget(),
                       getVerSpace(22.h),
-                      buildButtonWidget(context),
+                      buildButtonWidget(context, currentUser!, event),
                       getVerSpace(22.h),
                     ],
                   ),
@@ -92,11 +111,30 @@ class _FeaturedEventDetailState extends State<FeaturedEventDetail> {
     );
   }
 
-  Widget buildButtonWidget(BuildContext context) {
+  Widget buildButtonWidget(BuildContext context, UserModel currentUser, EventModel event) {
+    String buttonText = (event.organizer == "community") ? "Join" : "Buy Ticket  -  \$${event.price}";
     return getPaddingWidget(
       EdgeInsets.symmetric(horizontal: 20.h),
-      getButton(context, accentColor, "Buy Ticket", Colors.white, () {
-        Constant.sendToNext(context, Routes.buyTicketRoute);
+      getButton(context, accentColor, buttonText, Colors.white, () {
+
+        loadingDialog(context);
+
+        int updatedPoints = currentUser.xpPoints + event.points;
+        int updatedLevel = updatedPoints ~/ 20 + 1; 
+        List<String> updatedJoinedEvents = currentUser.joinedEvents;
+        updatedJoinedEvents.add(event.uid);
+
+        userRepository.updateUserField(currentUser.docId!, "xpPoints", updatedPoints);
+        userRepository.updateUserField(currentUser.docId!, "level", updatedLevel);
+        userRepository.updateUserField(currentUser.docId!, "joinedEvents", updatedJoinedEvents);
+
+        Constant.sendToNext(context, Routes.homeScreenRoute);
+
+        // if (event.organizer == "community") {
+        //   // Constant.sendToNext(context, Routes.joinCommunityRoute);
+        // } else {
+        //   // Constant.sendToNext(context, Routes.buyTicketRoute);
+        // }
       }, 18.sp,
           weight: FontWeight.w700,
           buttonHeight: 60.h,
@@ -104,26 +142,20 @@ class _FeaturedEventDetailState extends State<FeaturedEventDetail> {
     );
   }
 
-  Widget buildFollowWidget(BuildContext context) {
+  Widget buildFollowWidget(BuildContext context, EventModel event) {
     return getPaddingWidget(
       EdgeInsets.symmetric(horizontal: 20.h),
       Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Row(
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              getAssetImage("image.png", width: 58.h, height: 58.h),
-              getHorSpace(10.h),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  getCustomFont("Bella Flores", 18.sp, Colors.black, 1,
-                      fontWeight: FontWeight.w600, txtHeight: 1.5.h),
-                  getVerSpace(1.h),
-                  getCustomFont("Organizer", 15.sp, greyColor, 1,
-                      fontWeight: FontWeight.w500, txtHeight: 1.46.h)
-                ],
-              )
+              getCustomFont(event.organizerName, 18.sp, Colors.black, 1,
+                  fontWeight: FontWeight.w600, txtHeight: 1.5.h),
+              getVerSpace(1.h),
+              getCustomFont("Organizer", 15.sp, greyColor, 1,
+                  fontWeight: FontWeight.w500, txtHeight: 1.46.h)
             ],
           ),
           getButton(context, Colors.white, "Follow", accentColor, () {}, 14.sp,
@@ -139,7 +171,7 @@ class _FeaturedEventDetailState extends State<FeaturedEventDetail> {
     );
   }
 
-  Container buildTicketPrice() {
+  Container buildTicketPrice(EventModel event) {
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 20.h),
       padding: EdgeInsets.symmetric(horizontal: 16.h, vertical: 16.h),
@@ -148,16 +180,16 @@ class _FeaturedEventDetailState extends State<FeaturedEventDetail> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          getRichText("Ticket Price ", Colors.black, FontWeight.w600, 15.sp,
-              '(Economy)', greyColor, FontWeight.w500, 13.sp),
-          getCustomFont("\$21.00", 20.sp, Colors.black, 1,
+          getRichText("Points you will earn", Colors.black, FontWeight.w600, 15.sp,
+              '', greyColor, FontWeight.w500, 13.sp),
+          getCustomFont(event.points.toString(), 20.sp, Colors.black, 1,
               fontWeight: FontWeight.w700)
         ],
       ),
     );
   }
 
-  Stack buildImageWidget() {
+  Stack buildImageWidget(EventModel event) {
     return Stack(
       alignment: Alignment.topCenter,
       clipBehavior: Clip.none,
@@ -170,7 +202,7 @@ class _FeaturedEventDetailState extends State<FeaturedEventDetail> {
                   BorderRadius.vertical(bottom: Radius.circular(22.h)),
               image: DecorationImage(
                   image: AssetImage(
-                      "${Constant.assetImagePath}feature_detail.png"),
+                      (int.tryParse(event.uid)! >= 1 && int.tryParse(event.uid)! <= 14) ? "${Constant.assetImagePath}${event.uid}.png" : "${Constant.assetImagePath}default.png"),
                   fit: BoxFit.fill)),
           alignment: Alignment.topCenter,
           child: Container(
@@ -225,7 +257,7 @@ class _FeaturedEventDetailState extends State<FeaturedEventDetail> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   getVerSpace(16.h),
-                  getCustomFont("National Creativity", 22.sp, Colors.black, 1,
+                  getCustomFont(event.name, 22.sp, Colors.black, 1,
                       fontWeight: FontWeight.w700, txtHeight: 1.5.h),
                   getVerSpace(10.h),
                   Row(
@@ -234,7 +266,7 @@ class _FeaturedEventDetailState extends State<FeaturedEventDetail> {
                           height: 20.h, width: 20.h, color: greyColor),
                       getHorSpace(5.h),
                       getCustomFont(
-                        "California, USA",
+                        event.location,
                         15.sp,
                         greyColor,
                         1,
@@ -252,7 +284,7 @@ class _FeaturedEventDetailState extends State<FeaturedEventDetail> {
                               width: 20.h, height: 20.h),
                           getHorSpace(5.h),
                           getCustomFont(
-                            "20 July, 03:00 pm",
+                            event.date,
                             15.sp,
                             greyColor,
                             1,

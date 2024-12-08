@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mobile/screens/additional/event_details_screen.dart';
 import 'package:mobile/screens/additional/mood_questions.dart';
 import 'package:mobile/screens/home/navigation_bar.dart';
 import 'package:mobile/screens/onboarding/intro.dart';
@@ -28,5 +29,6 @@ class AppPages {
     Routes.homeScreenRoute: (context) => const NavBar(),
 
     Routes.moodQuestionsRoute: (context) => const MoodQuestions(),
+    Routes.eventDetailsRoute: (context) => const EventDetailsScreen(),
   };
 }

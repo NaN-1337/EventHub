@@ -67,7 +67,11 @@ class _HomeTabState extends State<HomeTab> {
       }
     }
 
+    // Filter feeling events
     List<EventModel> feelingEvents = [];
+    if (currentUser != null && currentUser.feelings.isNotEmpty) {
+      feelingEvents = eventRepository.sortEventsByUserMood(events, currentUser.feelings);
+    }
 
     return Column(
       children: [
@@ -243,7 +247,7 @@ class _HomeTabState extends State<HomeTab> {
           EventModel event = recommendedEvents[index];
           return GestureDetector(
             onTap: () {
-              // Constant.sendToNext(context, Routes.featuredEventDetailRoute);
+              Constant.sendToNext(context, Routes.eventDetailsRoute, arguments: event.uid);
             },
             child: Container(
               margin: EdgeInsets.only(right: 20.h, left: index == 0 ? 20.h : 0),
@@ -255,7 +259,7 @@ class _HomeTabState extends State<HomeTab> {
                         borderRadius: BorderRadius.circular(22.h),
                         image: DecorationImage(
                             image: AssetImage((int.tryParse(event.uid)! >= 1 && int.tryParse(event.uid)! <= 14) ? "${Constant.assetImagePath}${event.uid}.png" : "${Constant.assetImagePath}default.png"),
-                            fit: BoxFit.fill)),
+                            fit: BoxFit.cover)),
                     height: 170.h,
                     width: 248.h,
                     padding: EdgeInsets.only(left: 12.h, top: 12.h),
@@ -493,11 +497,11 @@ class _HomeTabState extends State<HomeTab> {
               borderRadius: BorderRadius.circular(22.h),
               image: DecorationImage(
                   image: AssetImage((int.tryParse(event.uid)! >= 1 && int.tryParse(event.uid)! <= 14) ? "${Constant.assetImagePath}${event.uid}.png" : "${Constant.assetImagePath}default.png"),
-                  fit: BoxFit.fill),
+                  fit: BoxFit.cover),
             ),
             child: GestureDetector(
               onTap: () {
-                // Constant.sendToNext(context, Routes.featuredEventDetailRoute);
+                Constant.sendToNext(context, Routes.eventDetailsRoute, arguments: event.uid);
               },
               child: Stack(
                 children: [
@@ -537,7 +541,7 @@ class _HomeTabState extends State<HomeTab> {
                           ],
                         ),
                         getVerSpace(22.h),
-                        getButton(context, accentColor, "Book Now",
+                        getButton(context, accentColor, "See details",
                             Colors.white, () {}, 14.sp,
                             weight: FontWeight.w700,
                             buttonHeight: 40.h,
