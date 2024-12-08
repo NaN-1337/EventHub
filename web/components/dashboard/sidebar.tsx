@@ -33,11 +33,6 @@ const navigation = [
     icon: Users,
   },
   {
-    name: "Calendar",
-    href: "/calendar",
-    icon: Calendar,
-  },
-  {
     name: "All Events",
     href: "/all-events",
     icon: Globe2,

@@ -13,7 +13,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { auth, db } from "@/lib/firebaseConfig"; // Ensure Firebase Auth and Firestore are initialized
 import { Progress } from "@/components/ui/progress"; // Import the Progress component
 import { onAuthStateChanged } from "firebase/auth";
-import { collection, query, where, getDocs, onSnapshot } from "firebase/firestore";
+import { collection, query, where, getDocs, onSnapshot, doc } from "firebase/firestore";
 import { CalendarModal } from "./calendar-modal"; // Import the new modal
 
 interface User {
