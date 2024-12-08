@@ -33,8 +33,8 @@ const navigation = [
     icon: Users,
   },
   {
-    name: "My Events",
-    href: "/dashboard/my-events",
+    name: "Calendar",
+    href: "/calendar",
     icon: Calendar,
   },
   {
@@ -105,7 +105,7 @@ export function Sidebar() {
       </div>
       <div className="p-4 text-xs text-[#E4F9F5]/80">
         <p>EventHub Dashboard</p>
-        <p>© 2023 All rights reserved</p>
+        <p>© 2024 All rights reserved</p>
       </div>
     </div>
   );
