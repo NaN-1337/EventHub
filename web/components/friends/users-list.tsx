@@ -16,11 +16,11 @@ interface User {
 interface UsersListProps {
   users: User[]
   currentUser: User | null
-  selectedUser: User | null
+  selectedConversationId: string | null
   onSelectUser: (user: User) => void
 }
 
-export function UsersList({ users, currentUser, selectedUser, onSelectUser }: UsersListProps) {
+export function UsersList({ users, currentUser, selectedConversationId, onSelectUser }: UsersListProps) {
   const [search, setSearch] = useState("")
 
   const filteredUsers = users.filter(u =>
@@ -29,7 +29,7 @@ export function UsersList({ users, currentUser, selectedUser, onSelectUser }: Us
   )
 
   return (
-    <div className="w-80 border-r border-gray-200 bg-white flex flex-col">
+    <div className="flex flex-col h-full">
       <div className="p-4 border-b border-gray-200">
         <div className="relative mb-4">
           <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
@@ -50,7 +50,7 @@ export function UsersList({ users, currentUser, selectedUser, onSelectUser }: Us
                 key={user.uid}
                 onClick={() => onSelectUser(user)}
                 className={`w-full flex items-center gap-3 p-3 rounded-lg transition-colors ${
-                  selectedUser?.uid === user.uid
+                  selectedConversationId && selectedConversationId.includes(user.uid)
                     ? "bg-[#E4F9F5]"
                     : "hover:bg-gray-100"
                 }`}

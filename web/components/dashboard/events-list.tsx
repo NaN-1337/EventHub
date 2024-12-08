@@ -25,9 +25,11 @@ import { ViewEventModal } from "./view-event-modal";
 
 export function EventList() {
   const [events, setEvents] = React.useState<any[]>([]);
+  const [filteredEvents, setFilteredEvents] = React.useState<any[]>([]);
   const [imageMap, setImageMap] = React.useState<Record<string, string>>({});
   const [sortOption, setSortOption] = React.useState<string>("Date: Recent first");
   const [viewingEventUid, setViewingEventUid] = React.useState<string | null>(null);
+  const [categoryFilter, setCategoryFilter] = React.useState<string | null>(null);
 
   // Real-time listener for Firestore events
   React.useEffect(() => {
@@ -49,6 +51,7 @@ export function EventList() {
       }, {} as Record<string, string>);
 
       setEvents(fetchedEvents);
+      setFilteredEvents(fetchedEvents); // Initially show all events
       setImageMap(uidToImageMap);
     });
 
@@ -58,7 +61,7 @@ export function EventList() {
   const handleSort = (option: string) => {
     setSortOption(option);
 
-    const sortedEvents = [...events];
+    const sortedEvents = [...filteredEvents];
     switch (option) {
       case "Date: Later first":
         sortedEvents.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
@@ -75,14 +78,52 @@ export function EventList() {
       default:
         break;
     }
-    setEvents(sortedEvents);
+    setFilteredEvents(sortedEvents);
   };
+
+  const handleFilterByCategory = (category: string | null) => {
+    setCategoryFilter(category);
+    if (category) {
+      setFilteredEvents(events.filter((event) => event.category === category));
+    } else {
+      setFilteredEvents(events); // Show all events if no category is selected
+    }
+  };
+
+  const allCategories = Array.from(new Set(events.map((event) => event.category)));
+
+  // Calculate dynamic container height based on the number of filtered events
+  const rowHeight = 72; // Height of a single table row in pixels (approximate)
+  const containerHeight = Math.min(
+    filteredEvents.length * rowHeight,
+    600 // Maximum height in pixels
+  );
 
   return (
     <>
       <Card className="rounded-2xl shadow-lg bg-white h-full">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-xl font-bold text-[#40514E]">All Events</CardTitle>
+          <div className="flex items-center gap-4">
+            <CardTitle className="text-xl font-bold text-[#40514E]">All Events</CardTitle>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="bg-white rounded-xl">
+                  {categoryFilter || "Filter by Category"}
+                  <ChevronDown className="ml-2 h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="rounded-xl bg-white">
+                <DropdownMenuItem onClick={() => handleFilterByCategory(null)}>
+                  Show All
+                </DropdownMenuItem>
+                {allCategories.map((category) => (
+                  <DropdownMenuItem key={category} onClick={() => handleFilterByCategory(category)}>
+                    {category}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" className="bg-white rounded-xl">
@@ -102,7 +143,12 @@ export function EventList() {
           </DropdownMenu>
         </CardHeader>
         <CardContent className="p-0">
-          <div className="overflow-auto h-[calc(100vh-12rem)]">
+          <div
+            className="overflow-auto"
+            style={{
+              height: `${containerHeight}px`,
+            }}
+          >
             <Table>
               <TableHeader>
                 <TableRow>
@@ -116,7 +162,7 @@ export function EventList() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {events.map((event) => {
+                {filteredEvents.map((event) => {
                   const eventImage =
                     imageMap[event.uid] || "/events-images/default.png"; // Default image fallback
                   return (

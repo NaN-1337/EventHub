@@ -1,8 +1,9 @@
 "use client";
 
-import * as React from "react";
-import { db } from "@/lib/firebaseConfig"; // Import Firestore config
-import { collection, onSnapshot } from "firebase/firestore";
+import React, { useEffect, useState, useCallback } from "react";
+import { db, auth } from "@/lib/firebaseConfig"; // Import Firestore and Auth config
+import { collection, query, where, getDocs, onSnapshot } from "firebase/firestore";
+import { onAuthStateChanged } from "firebase/auth";
 import useEmblaCarousel from "embla-carousel-react";
 import { ChevronLeft, ChevronRight, MapPin, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -67,28 +68,60 @@ export function EventCarousel() {
     containScroll: "trimSnaps",
   });
 
-  const [canScrollPrev, setCanScrollPrev] = React.useState(false);
-  const [canScrollNext, setCanScrollNext] = React.useState(true);
-  const [events, setEvents] = React.useState<any[]>([]);
-  const [imageMap, setImageMap] = React.useState<Record<string, string>>({});
-  const [viewingEventUid, setViewingEventUid] = React.useState<string | null>(null);
-  const [editingEvent, setEditingEvent] = React.useState<any | null>(null);
+  const [canScrollPrev, setCanScrollPrev] = useState(false);
+  const [canScrollNext, setCanScrollNext] = useState(true);
+  const [events, setEvents] = useState<any[]>([]);
+  const [imageMap, setImageMap] = useState<Record<string, string>>({});
+  const [viewingEventUid, setViewingEventUid] = useState<string | null>(null);
+  const [editingEvent, setEditingEvent] = useState<any | null>(null);
+  const [currentUserCreatedEvents, setCurrentUserCreatedEvents] = useState<string[]>([]);
 
-  React.useEffect(() => {
+  // Fetch current user's createdEvents UIDs
+  useEffect(() => {
+    const fetchCurrentUserEvents = async () => {
+      const authUser = auth.currentUser;
+
+      if (authUser) {
+        const usersRef = collection(db, "users");
+        const q = query(usersRef, where("email", "==", authUser.email));
+        const querySnapshot = await getDocs(q);
+
+        if (!querySnapshot.empty) {
+          const userDoc = querySnapshot.docs[0];
+          const userData = userDoc.data();
+          setCurrentUserCreatedEvents(userData.createdEvents || []);
+        }
+      }
+    };
+
+    const unsubscribeAuth = onAuthStateChanged(auth, () => {
+      fetchCurrentUserEvents();
+    });
+
+    return () => unsubscribeAuth();
+  }, []);
+
+  // Fetch only events organized by the current user
+  useEffect(() => {
+    if (currentUserCreatedEvents.length === 0) {
+      setEvents([]); // Clear events if no createdEvents are found
+      return;
+    }
+
     const eventsRef = collection(db, "events");
-
-    // Set up Firestore real-time listener
     const unsubscribe = onSnapshot(eventsRef, (snapshot) => {
-      const fetchedEvents = snapshot.docs.map((doc) => {
-        const data = doc.data();
-        const uid = data.uid; // Extract the `uid` field from the document
+      const fetchedEvents = snapshot.docs
+        .map((doc) => {
+          const data = doc.data();
+          const uid = data.uid; // Extract the `uid` field from the document
 
-        return {
-          id: doc.id, // Firestore document ID
-          uid, // The event's UID
-          ...data,
-        };
-      });
+          return {
+            id: doc.id, // Firestore document ID
+            uid, // The event's UID
+            ...data,
+          };
+        })
+        .filter((event) => currentUserCreatedEvents.includes(event.uid)); // Only include events created by the user
 
       // Map UIDs to images
       const uidToImage = fetchedEvents.reduce((map, event) => {
@@ -101,22 +134,22 @@ export function EventCarousel() {
     });
 
     return () => unsubscribe(); // Clean up the listener on component unmount
-  }, []);
+  }, [currentUserCreatedEvents]);
 
-  const scrollPrev = React.useCallback(() => {
+  const scrollPrev = useCallback(() => {
     if (emblaApi) emblaApi.scrollPrev();
   }, [emblaApi]);
 
-  const scrollNext = React.useCallback(() => {
+  const scrollNext = useCallback(() => {
     if (emblaApi) emblaApi.scrollNext();
   }, [emblaApi]);
 
-  const onSelect = React.useCallback((emblaApi: any) => {
+  const onSelect = useCallback((emblaApi: any) => {
     setCanScrollPrev(emblaApi.canScrollPrev());
     setCanScrollNext(emblaApi.canScrollNext());
   }, []);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!emblaApi) return;
 
     onSelect(emblaApi);
