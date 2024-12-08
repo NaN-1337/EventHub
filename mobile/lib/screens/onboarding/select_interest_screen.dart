@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
 import 'package:mobile/utils/color_data.dart';
 import 'package:mobile/utils/constant.dart';
 import 'package:mobile/utils/data_file.dart';
+import 'package:mobile/utils/globals.dart';
 import 'package:mobile/utils/modal/modal_select_interest.dart';
-import 'package:mobile/utils/pref_data.dart';
 import 'package:mobile/utils/routes/app_routes.dart';
 import 'package:mobile/utils/widget_utils.dart';
 
@@ -31,6 +32,8 @@ class _SelectInterestScreenState extends State<SelectInterestScreen> {
 
   @override
   Widget build(BuildContext context) {
+    Map<String, String> args = Get.arguments;
+
     setStatusBarColor(Colors.white);
     return WillPopScope(
       onWillPop: () async {
@@ -174,9 +177,7 @@ class _SelectInterestScreenState extends State<SelectInterestScreen> {
                           getButton(
                               context, accentColor, "Continue", Colors.white,
                               () {
-                            PrefData.setIsSignIn(true);
-                            Constant.sendToNext(
-                                context, Routes.homeScreenRoute);
+                              authRepository.signUp(context, args['email']!, args['name']!, args['password']!, selectIntersetList);
                           }, 18.sp,
                               weight: FontWeight.w700,
                               buttonHeight: 60.h,

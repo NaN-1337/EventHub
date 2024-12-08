@@ -37,15 +37,12 @@ class DataFile {
   ];
 
   static List<ModalSelectInterest> selectInterestList = [
-    ModalSelectInterest("select1.png", "Sport", "#FFEEDE", false),
-    ModalSelectInterest("select2.png", "Culture", "#FFFADF", false),
-    ModalSelectInterest("select3.png", "Party", "#DFFBFF", false),
-    ModalSelectInterest("select4.png", "Game", "#FFE4F1", false),
-    ModalSelectInterest("select5.png", "Tour", "#E7F0FF", false),
-    ModalSelectInterest("select6.png", "Festival", "#FFE8E8", false),
-    ModalSelectInterest("select7.png", "Food", "#FFE9E4", false),
-    ModalSelectInterest("select8.png", "Music", "#EEFCE4", false),
-    ModalSelectInterest("select9.png", "Beach", "#E2F6FF", false)
+    ModalSelectInterest("select8.png", "Music", "#EEFCE4", false, ["Rock", "Pop", "Jazz", "Rap", "Classical"]),
+    ModalSelectInterest("select1.png", "Sports", "#FFEEDE", false, ["Football", "Basket", "Tennis", "Running", "Yoga"]),
+    ModalSelectInterest("select5.png", "Travel", "#E7F0FF", false, ["Hiking", "Holiday", "Road Trip"]),
+    ModalSelectInterest("select2.png", "Culture", "#FFFADF", false, ["Arts", "Theater", "Museum", "Literature"]),
+    ModalSelectInterest("community_involvement.png", "Volunteering", "#FFE8E8", false, ["Environmental Conservation", "Animal Welfare", "Charity Fundraising", "Youth Programs"]),
+    ModalSelectInterest("select3.png", "Entertainment", "#DFFBFF", false, ["Movies", "Stand-Up", "Gaming"]),
   ];
 
   static List<ModalEventCategory> eventCategoryList = [

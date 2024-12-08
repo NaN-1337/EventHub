@@ -7,11 +7,11 @@ import 'package:get/get.dart';
 import 'package:mobile/models/event_model.dart';
 import 'package:mobile/models/user_model.dart';
 import 'package:mobile/providers/user_provider.dart';
-import 'package:mobile/screens/additional/ticket_confirm_dialog.dart';
 import 'package:mobile/screens/onboarding/controller.dart';
 import 'package:mobile/utils/color_data.dart';
 import 'package:mobile/utils/constant.dart';
 import 'package:mobile/utils/globals.dart';
+import 'package:mobile/utils/routes/app_routes.dart';
 import 'package:mobile/utils/widget_utils.dart';
 import 'package:provider/provider.dart';
 
@@ -168,11 +168,7 @@ class _AddCardScreenState extends State<AddCardScreen> {
                     );
                   }
                   userRepository.updateUserField(currentUser!.docId!, "tickets", currentUser.tickets);
-                  showDialog(
-                      builder: (context) {
-                        return const TicketConfirmDialog();
-                      },
-                      context: context);
+                  Constant.sendToNext(context, Routes.homeScreenRoute);
                 }, 18.sp,
                     weight: FontWeight.w700,
                     buttonHeight: 60.h,

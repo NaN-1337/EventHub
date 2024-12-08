@@ -201,8 +201,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               getButton(
                                   context, accentColor, "Sign Up", Colors.white,
                                   () {
-                                Constant.sendToNext(
-                                    context, Routes.verifyRoute);
+                                Constant.sendToNext(context, Routes.selectInterestRoute, arguments: {
+                                  "name": controller.nameController.text.toString(),
+                                  "email": controller.emailController.text.toString(),
+                                  "password": controller.passwordController.text.toString()
+                                });
                               }, 18.sp,
                                   weight: FontWeight.w700,
                                   buttonHeight: 60.h,
