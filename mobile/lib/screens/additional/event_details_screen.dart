@@ -128,17 +128,11 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
         userRepository.updateUserField(currentUser.docId!, "level", updatedLevel);
         userRepository.updateUserField(currentUser.docId!, "joinedEvents", updatedJoinedEvents);
 
-        // successDialog(context, "Successfully joined the event!", () {
-        //   Constant.sendToNext(context, Routes.homeScreenRoute);
-        // });
-
-        Constant.sendToNext(context, Routes.homeScreenRoute);
-
-        // if (event.organizer == "community") {
-        //   // Constant.sendToNext(context, Routes.joinCommunityRoute);
-        // } else {
-        //   // Constant.sendToNext(context, Routes.buyTicketRoute);
-        // }
+        if (event.organizer == "community") {
+          Constant.sendToNext(context, Routes.homeScreenRoute);
+        } else {
+          Constant.sendToNext(context, Routes.buyTicketRoute, arguments: event);
+        }
       }, 18.sp,
           weight: FontWeight.w700,
           buttonHeight: 60.h,

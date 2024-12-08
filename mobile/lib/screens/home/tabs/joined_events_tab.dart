@@ -135,7 +135,7 @@ class _JoinedEventsTabState extends State<JoinedEventsTab> {
                         color: lightAccent,
                         borderRadius: BorderRadius.circular(12.h)),
                     child: getCustomFont(
-                        event.price, 15.sp, accentColor, 1,
+                        "${event.points} Points", 15.sp, accentColor, 1,
                         fontWeight: FontWeight.w600),
                   )
                 ],

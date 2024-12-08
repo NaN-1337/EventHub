@@ -592,8 +592,7 @@ class _HomeTabState extends State<HomeTab> {
                   color: lightColor, borderRadius: BorderRadius.circular(22.h)),
               child: GestureDetector(
                   onTap: () {
-                    // Constant.sendToNext(
-                    //     context, Routes.notificationScreenRoute);
+                    authRepository.logOut(context);
                   },
                   child: getSvgImage("notification.svg",
                       height: 24.h, width: 24.h)),

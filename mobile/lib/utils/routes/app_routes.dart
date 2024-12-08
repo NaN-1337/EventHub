@@ -14,4 +14,6 @@ abstract class Routes {
 
   static const moodQuestionsRoute = "/MoodQuestions";
   static const eventDetailsRoute = "/EventDetailsScreen";
+  static const buyTicketRoute = "/BuyTicketScreen";
+  static const addCardRoute = "/AddCardScreen";
 }
