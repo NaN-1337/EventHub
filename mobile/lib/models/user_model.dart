@@ -15,7 +15,7 @@ class UserModel {
   final List<String> friends;
   final List<String> joinedEvents;
   final List<String> createdEvents;
-  final List<String> tickets;
+  final List<Map<String, String>> tickets;
   final Map<String, List<String>> preferences;
   final Map<String, int> feelings;
   
@@ -67,7 +67,7 @@ class UserModel {
     List<String> friends = (data["friends"] as List<dynamic>).map((e) => e.toString()).toList();
     List<String> joinedEvents = (data["joinedEvents"] as List<dynamic>).map((e) => e.toString()).toList();
     List<String> createdEvents = (data["createdEvents"] as List<dynamic>).map((e) => e.toString()).toList();
-    List<String> tickets = (data["tickets"] as List<dynamic>).map((e) => e.toString()).toList();
+    List<Map<String, String>> tickets = (data["tickets"] as List<dynamic>).map((e) => (e as Map<dynamic, dynamic>).map((key, value) => MapEntry(key.toString(), value.toString())).cast<String, String>()).toList();
     Map<String, List<String>> preferences = (data["preferences"] as Map<dynamic, dynamic>).map((key, value) => MapEntry(key.toString(), (value as List<dynamic>).map((e) => e.toString()).toList()));
     Map<String, int> feelings = (data["feelings"] as Map<dynamic, dynamic>).map((key, value) => MapEntry(key.toString(), value as int));
 

@@ -156,7 +156,16 @@ class _AddCardScreenState extends State<AddCardScreen> {
                 EdgeInsets.symmetric(horizontal: 20.h),
                 getButton(context, accentColor, "Purchase", Colors.white, () {
                   for (int i = 0; i < numberOfTickets; i++) {
-                    currentUser!.tickets.add(event.uid);
+                    currentUser!.tickets.add(
+                      {
+                        "eventUid": event.uid,
+                        "active": "true",
+                        "eventName": event.name,
+                        "eventDate": event.date,
+                        "eventLocation": event.location,
+                        "eventPrice": event.price
+                      }
+                    );
                   }
                   userRepository.updateUserField(currentUser!.docId!, "tickets", currentUser.tickets);
                   showDialog(

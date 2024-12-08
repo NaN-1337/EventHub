@@ -3,6 +3,7 @@ import 'package:mobile/screens/additional/add_card.dart';
 import 'package:mobile/screens/additional/buy_ticket.dart';
 import 'package:mobile/screens/additional/event_details_screen.dart';
 import 'package:mobile/screens/additional/mood_questions.dart';
+import 'package:mobile/screens/additional/ticket/ticket_detail.dart';
 import 'package:mobile/screens/home/navigation_bar.dart';
 import 'package:mobile/screens/onboarding/intro.dart';
 import 'package:mobile/screens/onboarding/login/login_screen.dart';
@@ -34,5 +35,6 @@ class AppPages {
     Routes.eventDetailsRoute: (context) => const EventDetailsScreen(),
     Routes.buyTicketRoute: (context) => const BuyTicket(),
     Routes.addCardRoute: (context) => const AddCardScreen(),
+    Routes.ticketDetailRoute: (context) => const TicketDetail(),
   };
 }

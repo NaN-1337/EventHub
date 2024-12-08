@@ -30,6 +30,27 @@ class EventRepository {
     }
   }
 
+  Future<EventModel?> getEventByUid(String uid) async {
+    try {
+      QuerySnapshot querySnapshot = await _firestore
+          .collection('events')
+          .where('uid', isEqualTo: uid)
+          .limit(1)
+          .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        final doc = querySnapshot.docs.first;
+        return EventModel.fromDocumentSnapshot(doc);
+      } else {
+        logger.e('[getEventByUid()] No event found with uid: $uid');
+        return null;
+      }
+    } catch (e) {
+      logger.e('[getEventByUid()] Error fetching event: $e');
+      return null;
+    }
+  }
+
   // Returns a list of events that the user has joined based on the event UIDs in joinedEvents.
   List<EventModel> getJoinedEvents(List<EventModel> allEvents, List<String> joinedEvents) {
     // logger.i("Joined Events: $joinedEvents");
