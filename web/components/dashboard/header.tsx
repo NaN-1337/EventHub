@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Bell, MessageSquare, Calendar } from "lucide-react";
+import { Bell, MessageSquare, Calendar, Star, Award } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { auth, db } from "@/lib/firebaseConfig"; // Ensure Firebase Auth and Firestore are initialized
+import { Progress } from "@/components/ui/progress"; // Import the Progress component
 import { onAuthStateChanged } from "firebase/auth";
 import { collection, query, where, getDocs, onSnapshot } from "firebase/firestore";
 import { CalendarModal } from "./calendar-modal"; // Import the new modal
@@ -62,11 +63,8 @@ export function Header() {
   }, []);
 
   // Example logic for progress:
-  // Let's assume XP Points goes from 0 to 10000 for the next milestone
   const xpValue = user?.xpPoints ?? 0;
   const xpMax = 100;
-
-  // For level, let's assume a max of 10 for demonstration
   const levelValue = user?.level ?? 1;
 
   return (
@@ -82,34 +80,38 @@ export function Header() {
           </p>
         </div>
 
-        {/* XP and Level Displays */}
         <div className="flex items-center gap-6">
-          {/* XP Progress */}
+          {/* Calendar Button */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="rounded-xl text-[#40514E] hover:bg-[#E4F9F5]"
+            onClick={() => setIsCalendarOpen(true)}
+          >
+            <Calendar className="h-5 w-5" />
+          </Button>
+
+          {/* XP and Level Displays */}
           <div className="flex flex-col items-start">
             <div className="flex items-center gap-2 text-[#40514E] font-medium">
               <Star className="h-5 w-5 text-[#11999E]" />
               <span>XP Points</span>
             </div>
             <div className="w-32">
-              <Progress value={xpValue / xpMax  * 100} />
+              <Progress value={(xpValue / xpMax) * 100} />
             </div>
-            <div className="text-sm text-gray-600">
-              {xpValue}
-            </div>
+            <div className="text-sm text-gray-600">{xpValue}</div>
           </div>
 
-          {/* Level Progress */}
           <div className="flex flex-col items-start">
             <div className="flex items-center gap-2 text-[#40514E] font-medium">
               <Award className="h-5 w-5 text-[#11999E]" />
               <span>Level</span>
             </div>
             <div className="w-32">
-              <Progress value={(levelValue * 10)} />
+              <Progress value={levelValue * 10} />
             </div>
-            <div className="text-sm text-gray-600">
-              Level {levelValue}
-            </div>
+            <div className="text-sm text-gray-600">Level {levelValue}</div>
           </div>
 
           {/* User Profile */}
