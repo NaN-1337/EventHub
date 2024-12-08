@@ -6,6 +6,8 @@
 TO DO:
 
 - register functional
+- puncte
+- payment
 
 ## Creating a new entity
 

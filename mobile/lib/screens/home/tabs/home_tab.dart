@@ -12,6 +12,7 @@ import 'package:mobile/utils/constant.dart';
 import 'package:mobile/utils/data_file.dart';
 import 'package:mobile/utils/globals.dart';
 import 'package:mobile/utils/modal/modal_event_category.dart';
+import 'package:mobile/utils/routes/app_routes.dart';
 import 'package:mobile/utils/widget_utils.dart';
 import 'package:provider/provider.dart';
 
@@ -421,7 +422,7 @@ class _HomeTabState extends State<HomeTab> {
       ),
       child: GestureDetector(
         onTap: () {
-          // Constant.sendToNext(context, Routes.featuredEventDetailRoute);
+          Constant.sendToNext(context, Routes.moodQuestionsRoute);
         },
         child: Stack(
           children: [

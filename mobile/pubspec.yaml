@@ -26,6 +26,7 @@ dependencies:
   shared_preferences: ^2.2.0
   image_picker: ^0.8.9
   pinput: ^2.2.31
+  readmore: ^2.2.0
 
 dev_dependencies:
   flutter_test:

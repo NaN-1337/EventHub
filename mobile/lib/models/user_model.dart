@@ -17,6 +17,7 @@ class UserModel {
   final List<String> createdEvents;
   final Map<String, int> tickets;
   final Map<String, List<String>> preferences;
+  final Map<String, int> feelings;
   
   UserModel({
     this.docId,
@@ -33,7 +34,8 @@ class UserModel {
     required this.joinedEvents,
     required this.createdEvents,
     required this.tickets,
-    required this.preferences
+    required this.preferences,
+    required this.feelings
   });
 
   // Convert UserModel to a Map for Firestore
@@ -52,7 +54,8 @@ class UserModel {
       "joinedEvents": joinedEvents,
       "createdEvents": createdEvents,
       "tickets": tickets,
-      "preferences": preferences
+      "preferences": preferences,
+      "feelings": feelings
     };
   }
 
@@ -66,6 +69,7 @@ class UserModel {
     List<String> createdEvents = (data["createdEvents"] as List<dynamic>).map((e) => e.toString()).toList();
     Map<String, int> tickets = (data["tickets"] as Map<dynamic, dynamic>).map((key, value) => MapEntry(key.toString(), value as int));
     Map<String, List<String>> preferences = (data["preferences"] as Map<dynamic, dynamic>).map((key, value) => MapEntry(key.toString(), (value as List<dynamic>).map((e) => e.toString()).toList()));
+    Map<String, int> feelings = (data["feelings"] as Map<dynamic, dynamic>).map((key, value) => MapEntry(key.toString(), value as int));
 
     return UserModel(
       docId: doc.id,
@@ -82,7 +86,8 @@ class UserModel {
       joinedEvents: joinedEvents,
       createdEvents: createdEvents,
       tickets: tickets,
-      preferences: preferences
+      preferences: preferences,
+      feelings: feelings
     );
   }
 }
