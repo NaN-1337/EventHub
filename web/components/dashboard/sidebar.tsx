@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 import {
   LayoutDashboard,
@@ -59,11 +60,16 @@ export function Sidebar() {
 
   return (
     <div className="flex h-full w-64 flex-col bg-[#11999E] rounded-r-3xl shadow-lg">
-      <div className="flex h-16 items-center px-6">
-        <Link href="/dashboard" className="flex items-center gap-2">
-          <div className="text-[#E4F9F5] text-2xl font-bold">E</div>
-          <span className="text-lg font-semibold text-[#E4F9F5]">EventHub</span>
-        </Link>
+      <div className="flex h-auto items-center mt-4 px-16">
+      <Link href="/dashboard" className="flex items-center gap-2">
+        <Image 
+          src="/event_logo.svg" 
+          alt="EventHub Logo" 
+          width={100} 
+          height={32} 
+          className="object-contain "
+        />
+      </Link>
       </div>
       <nav className="flex-1 space-y-2 px-3 py-4">
         {navigation.map((item) => {
