@@ -190,39 +190,67 @@ export function AuthForm({ mode }: AuthFormProps) {
   }
 
   // Handle email-based authentication
-  async function handleEmailAuth(
+  const handleEmailAuth = async (
     mode: string,
     data: { email: string; password: string; fullName?: string; username?: string }
-  ) {
+  ) => {
     try {
-      setAuthError(null);
+      setAuthError(null)
+      setIsLoading(true)
 
-      setIsLoading(true);
       // Set persistence for session continuity
-      await setPersistence(auth, browserLocalPersistence);
+      await setPersistence(auth, browserLocalPersistence)
 
       if (mode === 'login') {
-        await signInWithEmailAndPassword(auth, data.email, data.password);
-        router.push('/dashboard'); // Redirect to dashboard after login
+        const userCredential = await signInWithEmailAndPassword(auth, data.email, data.password)
+        const user = userCredential.user
+
+        // Check user's level in Firestore
+        const usersRef = collection(db, "users")
+        const q = query(usersRef, where("email", "==", data.email))
+        const querySnapshot = await getDocs(q)
+
+        if (!querySnapshot.empty) {
+          const userData = querySnapshot.docs[0].data()
+          const userLevel = userData.level || 0
+
+          if (userLevel >= 2) {
+            router.push('/dashboard') // Redirect to dashboard
+          } else {
+            router.push('/not-found') // Redirect to not-found
+          }
+        } else {
+          setAuthError("User data not found. Please contact support.")
+        }
       } else {
-        const { email, password, fullName, username } = data;
-        await createUserWithEmailAndPassword(auth, email, password);
-        await saveUserToFirestore(email, fullName!, username!);
-        router.push('/dashboard'); // Redirect to dashboard after registration
+        const { email, password, fullName, username } = data
+        await createUserWithEmailAndPassword(auth, email, password)
+
+        const userUid = uuidv4()
+        const docUid = uuidv4()
+        const userDocRef = doc(collection(db, "users"), docUid)
+
+        await setDoc(userDocRef, {
+          uid: userUid,
+          name: fullName,
+          email,
+          username,
+          level: 0,
+        })
+
+        router.push('/dashboard') // Redirect to dashboard after registration
       }
     } catch (error: unknown) {
-      const firebaseError = error as { code: string };
+      const firebaseError = error as { code: string }
       setAuthError(
         firebaseError.code === "auth/user-not-found" || firebaseError.code === "auth/wrong-password"
           ? "Incorrect email or password. Please try again."
           : firebaseError.code === "auth/email-already-in-use"
           ? "This email is already registered. Please log in."
-          : firebaseError.code === "auth/weak-password"
-          ? "Password is too weak. Please use a stronger password."
           : "An unexpected error occurred. Please try again."
-      );
+      )
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
   }
 
