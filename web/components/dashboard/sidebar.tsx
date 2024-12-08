@@ -39,7 +39,7 @@ const navigation = [
   },
   {
     name: "Contact",
-    href: "/dashboard/contact",
+    href: "/contact",
     icon: Mail,
   },
 ];

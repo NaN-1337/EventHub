@@ -28,7 +28,8 @@ export function ViewEventModal({ eventUid, isOpen, onClose, onEdit, imageMap }: 
     subcategory: string;
   } | null>(null);
   const [eventImage, setEventImage] = useState<string>("/events-images/default.png");
-  const [canEdit, setCanEdit] = useState<boolean>(false); // Track if the user can edit
+  const [friendsParticipating, setFriendsParticipating] = useState<string[]>([]);
+  const [canEdit, setCanEdit] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchEvent = async () => {
@@ -50,6 +51,39 @@ export function ViewEventModal({ eventUid, isOpen, onClose, onEdit, imageMap }: 
         }
       } catch (error) {
         console.error("Error fetching event by UID:", error);
+      }
+    };
+
+    const fetchFriendsParticipating = async () => {
+      try {
+        const user = auth.currentUser;
+        if (!user) return;
+
+        const usersRef = collection(db, "users");
+        const userQuery = query(usersRef, where("email", "==", user.email));
+        const userSnapshot = await getDocs(userQuery);
+
+        if (!userSnapshot.empty) {
+          const userData = userSnapshot.docs[0].data();
+          const friends = userData.friends || [];
+
+          const friendsQuery = query(usersRef, where("email", "in", friends));
+          const friendsSnapshot = await getDocs(friendsQuery);
+
+          const participatingFriends: string[] = [];
+          for (const doc of friendsSnapshot.docs) {
+            const friendData = doc.data();
+            if (friendData.joinedEvents && friendData.joinedEvents.includes(eventUid)) {
+              participatingFriends.push(friendData.name || friendData.email);
+            }
+          }
+
+          setFriendsParticipating(participatingFriends);
+        } else {
+          console.error("User not found in Firestore.");
+        }
+      } catch (error) {
+        console.error("Error fetching friends participating:", error);
       }
     };
 
@@ -79,6 +113,7 @@ export function ViewEventModal({ eventUid, isOpen, onClose, onEdit, imageMap }: 
 
     if (isOpen) {
       fetchEvent();
+      fetchFriendsParticipating();
       checkIfUserCanEdit();
     }
   }, [eventUid, isOpen, imageMap]);
@@ -108,9 +143,6 @@ export function ViewEventModal({ eventUid, isOpen, onClose, onEdit, imageMap }: 
             src={eventImage}
             alt={`Image for ${event.name}`}
             onError={(e) => {
-              // console.error(
-              //   `Image load failed for event UID ${eventUid}. Falling back to default image.`
-              // );
               e.currentTarget.src = "/events-images/default.png"; // Fallback to default
             }}
             className="w-full h-48 object-cover rounded-lg"
@@ -141,6 +173,17 @@ export function ViewEventModal({ eventUid, isOpen, onClose, onEdit, imageMap }: 
               {event.subcategory}
             </Badge>
           </div>
+          {/* Friends Participating */}
+          {friendsParticipating.length > 0 && (
+            <div className="mt-4">
+              <h4 className="text-lg font-semibold text-[#40514E]">Friends Participating:</h4>
+              <ul className="list-disc pl-5 text-[#40514E]">
+                {friendsParticipating.map((friend, index) => (
+                  <li key={index}>{friend}</li>
+                ))}
+              </ul>
+            </div>
+          )}
           {/* Actions */}
           <div className="flex justify-end gap-2">
             <Button onClick={onClose} variant="outline">

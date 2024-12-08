@@ -4,6 +4,7 @@ import { EventsCenter } from "@/components/dashboard/events-center"
 import { EventList } from "@/components/dashboard/events-list"
 import { EventStatistic } from "@/components/dashboard/event-statistic"
 import { EventMonthlyEvolution } from "@/components/dashboard/event-evolution"
+import { EventMonthlyEvolutionAI } from "@/components/dashboard/event-evolution-ai"
 
 export default function DashboardPage() {
   return (
@@ -19,6 +20,7 @@ export default function DashboardPage() {
           <div>
             <EventStatistic />
             <EventMonthlyEvolution />
+            <EventMonthlyEvolutionAI />
           </div>
         </main>
       </div>
