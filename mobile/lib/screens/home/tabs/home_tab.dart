@@ -52,12 +52,6 @@ class _HomeTabState extends State<HomeTab> {
     final eventsProvider = Provider.of<EventsProvider>(context);
     List<EventModel> events = eventsProvider.events;
 
-    // Filter joined events
-    List<EventModel> joinedEvents = [];
-    if (currentUser != null && currentUser.joinedEvents.isNotEmpty) {
-      joinedEvents = eventRepository.getJoinedEvents(events, currentUser.joinedEvents);
-    }
-
     // Filter recommended events
     List<EventModel> recommendedEvents = [];
     if (currentUser != null && currentUser.preferences.isNotEmpty) {
@@ -65,13 +59,18 @@ class _HomeTabState extends State<HomeTab> {
       if (selectedCategory != "All") {
         recommendedEvents = recommendedEvents.where((event) => event.category == selectedCategory).toList();
       }
+      // remove joined events from recommended events
+      recommendedEvents.removeWhere((event) => currentUser.joinedEvents.contains(event.uid));
     }
 
     // Filter feeling events
     List<EventModel> feelingEvents = [];
     if (currentUser != null && currentUser.feelings.isNotEmpty) {
       feelingEvents = eventRepository.sortEventsByUserMood(events, currentUser.feelings);
+      feelingEvents.removeWhere((event) => currentUser.joinedEvents.contains(event.uid));
     }
+
+    // events.removeWhere((event) => currentUser != null && currentUser.joinedEvents.contains(event.uid));
 
     return Column(
       children: [
@@ -170,13 +169,13 @@ class _HomeTabState extends State<HomeTab> {
   ListView buildAllEventList(List<EventModel> events) {
     return ListView.builder(
       padding: EdgeInsets.symmetric(horizontal: 20.h),
-      itemCount: (events.length > 5) ? 5 : events.length,
+      itemCount: events.length,
       primary: false,
       shrinkWrap: true,
       itemBuilder: (context, index) {
         EventModel event = events[index];
         return Container(
-          margin: EdgeInsets.only(bottom: 20.h),
+          margin: EdgeInsets.only(bottom: 10.h),
           decoration: BoxDecoration(
               color: Colors.white,
               boxShadow: [
@@ -203,13 +202,13 @@ class _HomeTabState extends State<HomeTab> {
                       children: [
                         SizedBox(
                           width: 200.w,
-                          child: getCustomFont(event.name, 18.sp,
+                          child: getCustomFont(event.name, 16.sp,
                               Colors.black, 1,
                               fontWeight: FontWeight.w600, txtHeight: 1.5.h),
                         ),
                         getVerSpace(4.h),
                         getCustomFont(
-                            event.date, 15.sp, greyColor, 1,
+                            event.date, 14.sp, greyColor, 1,
                             fontWeight: FontWeight.w500, txtHeight: 1.46.h)
                       ],
                     )

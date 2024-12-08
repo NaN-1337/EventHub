@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:mobile/screens/home/tabs/home_tab.dart';
+import 'package:mobile/screens/home/tabs/joined_events_tab.dart';
 import 'package:mobile/screens/onboarding/controller.dart';
 import 'package:mobile/utils/appBar/bar.dart';
 import 'package:mobile/utils/appBar/item.dart';
@@ -25,11 +26,10 @@ class _NavBarState extends State<NavBar> with TickerProviderStateMixin {
   NavBarController controller = Get.put(NavBarController());
   static final List<Widget> _widgetOptions = <Widget>[
     const HomeTab(),
-    // const FavoritesTab(),
+    const JoinedEventsTab(),
     // const CreateEventScreen(),
     // const TicketsTab(),
     // const ProfileTab(),
-    const SizedBox(),
     const SizedBox(),
     const SizedBox(),
     const SizedBox(),

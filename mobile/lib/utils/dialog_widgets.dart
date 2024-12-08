@@ -39,7 +39,7 @@ void confirmDialog(BuildContext context, String message, Function() onConfirm, S
   );
 }
 
-void successDialog(BuildContext context, String message) {
+void successDialog(BuildContext context, String message, void Function()? onConfirmBtnTap) {
   CoolAlert.show(
     context: context,
     barrierDismissible: false,
@@ -47,6 +47,7 @@ void successDialog(BuildContext context, String message) {
     backgroundColor: Colors.greenAccent.withOpacity(0.2),
     confirmBtnColor: const Color.fromARGB(255, 73, 186, 143),
     confirmBtnText: 'OK',
+    onConfirmBtnTap: onConfirmBtnTap,
     title: message,
     titleTextStyle: const TextStyle(
       fontWeight: FontWeight.w600,

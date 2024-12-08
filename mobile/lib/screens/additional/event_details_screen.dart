@@ -128,6 +128,10 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
         userRepository.updateUserField(currentUser.docId!, "level", updatedLevel);
         userRepository.updateUserField(currentUser.docId!, "joinedEvents", updatedJoinedEvents);
 
+        // successDialog(context, "Successfully joined the event!", () {
+        //   Constant.sendToNext(context, Routes.homeScreenRoute);
+        // });
+
         Constant.sendToNext(context, Routes.homeScreenRoute);
 
         // if (event.organizer == "community") {
@@ -203,7 +207,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
               image: DecorationImage(
                   image: AssetImage(
                       (int.tryParse(event.uid)! >= 1 && int.tryParse(event.uid)! <= 14) ? "${Constant.assetImagePath}${event.uid}.png" : "${Constant.assetImagePath}default.png"),
-                  fit: BoxFit.fill)),
+                  fit: BoxFit.cover)),
           alignment: Alignment.topCenter,
           child: Container(
             height: 183.h,

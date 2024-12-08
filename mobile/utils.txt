@@ -6,8 +6,10 @@
 TO DO:
 
 - register functional
-- puncte
-- payment
+- puncte si level de afisat pe home screen
+- buton +
+- payment + tickets
+- profile page UI
 
 ## Creating a new entity
 

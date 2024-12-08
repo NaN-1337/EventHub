@@ -32,7 +32,10 @@ class EventRepository {
 
   // Returns a list of events that the user has joined based on the event UIDs in joinedEvents.
   List<EventModel> getJoinedEvents(List<EventModel> allEvents, List<String> joinedEvents) {
-    return allEvents.where((event) => joinedEvents.contains(event.uid)).toList();
+    // logger.i("Joined Events: $joinedEvents");
+    var result = allEvents.where((event) => joinedEvents.contains(event.uid)).toList();
+    // logger.i("result: $result");
+    return result;
   }
 
   // Returns a list of events that match the user's preferences.
