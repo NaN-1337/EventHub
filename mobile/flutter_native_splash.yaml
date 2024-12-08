@@ -22,16 +22,16 @@ flutter_native_splash:
 
   # The image parameter allows you to specify an image used in the splash screen.  It must be a
   # png file and should be sized for 4x pixel density.
-  image: assets/images/finexa/splash_1024.png
+  image: assets/images/splash_logo.png
 
   # The branding property allows you to specify an image used as branding in the splash screen.
   # It must be a png file. It is supported for Android, iOS and the Web.  For Android 12,
   # see the Android 12 section below.
-  branding: assets/images/finexa/brand_256.png
+  # branding: assets/images/finexa/brand_256.png
 
   # To position the branding image at the bottom of the screen you can use bottom, bottomRight,
   # and bottomLeft. The default values is bottom if not specified or specified something else.
-  branding_mode: bottom
+  # branding_mode: bottom
   
   # Set the branding padding from the bottom of the screen.  The default value is 0
   # branding_bottom_padding: 24
@@ -59,7 +59,7 @@ flutter_native_splash:
     # 768 pixels in diameter.  To fit a 1152x1152 image within a circle with a 768 diameter, simply 
     # ensure that the most important design elements of your image are placed within a circular area
     # with a 768 diameter at the center of the 1152x1152 canvas.
-    image: assets/images/finexa/splash_foreground.png
+    image: assets/images/splash_logo.png
 
     # Splash screen background color.
     color: "#d5dde2"
@@ -68,7 +68,7 @@ flutter_native_splash:
     icon_background_color: "#d5dde2"
 
     # The branding property allows you to specify an image used as branding in the splash screen.
-    branding: assets/images/finexa/brand.png
+    # branding: assets/images/finexa/brand.png
 
     # The image_dark, color_dark, icon_background_color_dark, and branding_dark set values that
     # apply when the device is in dark mode. If they are not specified, the app will use the

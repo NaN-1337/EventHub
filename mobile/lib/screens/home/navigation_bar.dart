@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:mobile/screens/home/tabs/home_tab.dart';
 import 'package:mobile/screens/home/tabs/joined_events_tab.dart';
+import 'package:mobile/screens/home/tabs/profile_tab.dart';
 import 'package:mobile/screens/home/tabs/tickets_tab.dart';
 import 'package:mobile/screens/onboarding/controller.dart';
 import 'package:mobile/utils/appBar/bar.dart';
@@ -31,8 +32,7 @@ class _NavBarState extends State<NavBar> with TickerProviderStateMixin {
     // const CreateEventScreen(),
     const SizedBox(),
     const TicketsTab(),
-    // const ProfileTab(),
-    const SizedBox(),
+    const ProfileTab(),
   ];
   TabController? tabcontroller;
 

@@ -594,9 +594,8 @@ class _HomeTabState extends State<HomeTab> {
                   onTap: () {
                     authRepository.logOut(context);
                   },
-                  child: getSvgImage("notification.svg",
-                      height: 24.h, width: 24.h)),
-            )
+                  child: Icon(Icons.logout, color: Colors.black, size: 20,),
+            ))
           ]),
     );
   }
