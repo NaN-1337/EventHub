@@ -5,9 +5,7 @@
 
 TO DO:
 
-- puncte si level de afisat pe home screen
 - buton +
-- profile page UI
 
 ## Creating a new entity
 
