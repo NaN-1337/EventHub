@@ -30,7 +30,7 @@ export function GroupsList({ groups, selectedConversationId, onSelectGroup, onNe
 
   return (
     <div className="flex flex-col h-full">
-      <div className="p-4 border-b border-gray-200">
+      <div className="p-4 border-b border-gray-200 bg-white">
         <div className="flex gap-2 mb-4">
           <div className="relative flex-1">
             <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
@@ -38,11 +38,11 @@ export function GroupsList({ groups, selectedConversationId, onSelectGroup, onNe
               placeholder="Search groups..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-8"
+              className="pl-8 bg-white border-[#30E3CA] focus:ring-[#11999E]"
             />
           </div>
-          <Button onClick={onNewGroup} variant="outline" className="flex gap-1 items-center">
-            <Users className="h-4 w-4" />
+          <Button onClick={onNewGroup} variant="outline" className="bg-[#30E3CA] text-white hover:bg-[#11999E] transition-colors">
+            <Users className="h-4 w-4 mr-2" />
             New Group
           </Button>
         </div>
@@ -61,12 +61,12 @@ export function GroupsList({ groups, selectedConversationId, onSelectGroup, onNe
             >
               <Avatar>
                 <AvatarImage src={group.avatar || `https://avatar.vercel.sh/${group.id}`} />
-                <AvatarFallback>
+                <AvatarFallback className="bg-[#30E3CA] text-[#40514E]">
                   {group.name.substring(0, 2).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1 text-left">
-                <div className="font-medium">{group.name}</div>
+                <div className="font-medium text-[#40514E]">{group.name}</div>
                 <div className="text-sm text-gray-500 truncate">
                   {group.participants.length} participants
                 </div>
