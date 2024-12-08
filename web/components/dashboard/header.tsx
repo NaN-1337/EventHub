@@ -1,23 +1,64 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import { Bell, MessageSquare } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { useState, useEffect } from "react";
+import { Bell, MessageSquare } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { auth, db } from "@/lib/firebaseConfig"; // Ensure Firebase Auth and Firestore are initialized
+import { onAuthStateChanged } from "firebase/auth";
+import { collection, query, where, getDocs, doc, onSnapshot } from "firebase/firestore";
+
+interface User {
+  name: string;
+  email: string;
+  username: string;
+  photoURL?: string;
+}
 
 export function Header() {
-  const [fullName, setFullName] = useState<string | null>(null)
+  const [user, setUser] = useState<User | null>(null);
+  const [userDocId, setUserDocId] = useState<string | null>(null);
 
   useEffect(() => {
-    // Simulating fetching user data
-    setFullName("ANDREI") // Replace with actual fetch call
-  }, [])
+    const unsubscribeAuth = onAuthStateChanged(auth, async (authUser) => {
+      if (authUser) {
+        const usersRef = collection(db, "users");
+        const q = query(usersRef, where("email", "==", authUser.email));
+        const querySnapshot = await getDocs(q);
+
+        if (!querySnapshot.empty) {
+          const docData = querySnapshot.docs[0].data() as User;
+          const docId = querySnapshot.docs[0].id;
+          setUser(docData);
+          setUserDocId(docId);
+
+          const unsubscribeSnapshot = onSnapshot(
+            doc(db, "users", docId),
+            (snapshot) => {
+              if (snapshot.exists()) {
+                setUser(snapshot.data() as User);
+              }
+            }
+          );
+
+          return () => unsubscribeSnapshot();
+        } else {
+          console.error("User document does not exist for email:", authUser.email);
+        }
+      } else {
+        setUser(null);
+        setUserDocId(null);
+      }
+    });
+
+    return () => unsubscribeAuth();
+  }, []);
 
   return (
     <header className="h-auto bg-gray-100 px-8 py-4">
@@ -25,7 +66,7 @@ export function Header() {
         {/* Welcome Message */}
         <div className="flex-1">
           <h1 className="text-2xl font-bold text-[#40514E]">
-            Welcome, {fullName || "there"}!
+            Welcome{user?.name ? `, ${user.name}` : "!"}
           </h1>
           <p className="text-sm text-[#40514E]/70 mt-1">
             Ready to explore exciting events?
@@ -63,10 +104,12 @@ export function Header() {
             <DropdownMenuTrigger asChild>
               <Avatar className="h-10 w-10 cursor-pointer">
                 <AvatarImage
-                  src="https://github.com/shadcn.png"
-                  alt={fullName || "User"}
+                  src={user?.photoURL || "https://github.com/shadcn.png"}
+                  alt={user?.name || "User"}
                 />
-                <AvatarFallback>AN</AvatarFallback>
+                <AvatarFallback>
+                  {user?.name?.[0]?.toUpperCase() || "?"}
+                </AvatarFallback>
               </Avatar>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56 rounded-xl bg-white">
@@ -78,5 +121,5 @@ export function Header() {
         </div>
       </div>
     </header>
-  )
+  );
 }
