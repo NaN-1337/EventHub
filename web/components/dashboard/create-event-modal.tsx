@@ -1,21 +1,36 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Label } from "@/components/ui/label"
-import { CalendarIcon } from "lucide-react"
-import { Calendar } from "@/components/ui/calendar"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { cn } from "@/lib/utils"
-import { format } from "date-fns"
+import { useState, useEffect } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { CalendarIcon } from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { cn } from "@/lib/utils";
+import { format } from "date-fns";
+import { db, auth } from "@/lib/firebaseConfig";
+import { collection, getDocs, addDoc, query, where, doc, updateDoc } from "firebase/firestore";
+import { onAuthStateChanged } from "firebase/auth";
 
 interface CreateEventModalProps {
-  isOpen: boolean
-  onClose: () => void
+  isOpen: boolean;
+  onClose: () => void;
 }
 
 const categories = {
@@ -31,18 +46,103 @@ const categories = {
     "None",
   ],
   entertainment: ["Movies", "Stand-Up", "Gaming", "None"],
-}
+};
 
 export function CreateEventModal({ isOpen, onClose }: CreateEventModalProps) {
-  const [date, setDate] = useState<Date>()
-  const [category, setCategory] = useState<keyof typeof categories | "">("")
-  const [subcategory, setSubcategory] = useState("")
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [location, setLocation] = useState("");
+  const [date, setDate] = useState<Date>();
+  const [category, setCategory] = useState<keyof typeof categories | "">("");
+  const [subcategory, setSubcategory] = useState("");
+  const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null);
+  const [currentUserName, setCurrentUserName] = useState<string>("Admin");
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    // Handle form submission here
-    onClose()
-  }
+  // Fetch the current user's info on mount
+  useEffect(() => {
+    const unsubscribeAuth = onAuthStateChanged(auth, async (authUser) => {
+      if (authUser) {
+        setCurrentUserEmail(authUser.email);
+
+        const usersRef = collection(db, "users");
+        const q = query(usersRef, where("email", "==", authUser.email));
+        const querySnapshot = await getDocs(q);
+
+        if (!querySnapshot.empty) {
+          const userDoc = querySnapshot.docs[0];
+          const userData = userDoc.data();
+          setCurrentUserName(userData.name || "Admin");
+        }
+      }
+    });
+
+    return () => unsubscribeAuth();
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    if (!currentUserEmail) {
+      alert("No authenticated user found. Please log in again.");
+      return;
+    }
+
+    try {
+      const eventsRef = collection(db, "events");
+
+      // Fetch existing UIDs and calculate the next available UID
+      const querySnapshot = await getDocs(eventsRef);
+      const existingUids = querySnapshot.docs
+        .map((doc) => parseInt(doc.data().uid, 10))
+        .filter((uid) => !isNaN(uid))
+        .sort((a, b) => a - b);
+
+      let nextUid = 1;
+      for (let i = 0; i < existingUids.length; i++) {
+        if (existingUids[i] !== nextUid) break;
+        nextUid++;
+      }
+
+      // Prepare new event data
+      const newEvent = {
+        uid: nextUid.toString(), // UID field
+        name,
+        description,
+        location,
+        date: date ? format(date, "yyyy-MM-dd") : "",
+        category,
+        subcategory,
+        organizer: "community",
+        points: 3,
+        organizer_name: currentUserName,
+        participants: [],
+      };
+
+      // Add the new event to Firestore
+      await addDoc(eventsRef, newEvent);
+
+      // Update the current user's createdEvents field using the event UID
+      const usersRef = collection(db, "users");
+      const q = query(usersRef, where("email", "==", currentUserEmail));
+      const userSnapshot = await getDocs(q);
+
+      if (!userSnapshot.empty) {
+        const userDoc = userSnapshot.docs[0];
+        const userDocRef = doc(db, "users", userDoc.id);
+
+        const userData = userDoc.data();
+        const updatedCreatedEvents = [...(userData.createdEvents || []), nextUid.toString()];
+
+        await updateDoc(userDocRef, { createdEvents: updatedCreatedEvents });
+      }
+
+      // alert(`Event created successfully with UID ${nextUid}`);
+      onClose(); // Close the modal after successful submission
+    } catch (error) {
+      console.error("Error creating event:", error);
+      alert("Failed to create event. Please try again.");
+    }
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -60,6 +160,8 @@ export function CreateEventModal({ isOpen, onClose }: CreateEventModalProps) {
             <Input
               id="name"
               placeholder="Enter event name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
               className="bg-white border-[#30E3CA] focus:ring-[#11999E]"
             />
           </div>
@@ -70,6 +172,8 @@ export function CreateEventModal({ isOpen, onClose }: CreateEventModalProps) {
             <Textarea
               id="description"
               placeholder="Enter event description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
               className="bg-white border-[#30E3CA] focus:ring-[#11999E]"
             />
           </div>
@@ -80,6 +184,8 @@ export function CreateEventModal({ isOpen, onClose }: CreateEventModalProps) {
             <Input
               id="location"
               placeholder="Enter event location"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
               className="bg-white border-[#30E3CA] focus:ring-[#11999E]"
             />
           </div>
@@ -98,7 +204,7 @@ export function CreateEventModal({ isOpen, onClose }: CreateEventModalProps) {
                   {date ? format(date, "PPP") : <span>Pick a date</span>}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
+              <PopoverContent className="w-auto p-0 bg-white" align="start">
                 <Calendar
                   mode="single"
                   selected={date}
@@ -158,5 +264,5 @@ export function CreateEventModal({ isOpen, onClose }: CreateEventModalProps) {
         </form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

@@ -17,6 +17,8 @@ import {
   createUserWithEmailAndPassword,
   GoogleAuthProvider,
   signInWithPopup,
+  browserLocalPersistence,
+  setPersistence,
   onAuthStateChanged,
   sendPasswordResetEmail,
 } from "firebase/auth"
@@ -194,6 +196,10 @@ export function AuthForm({ mode }: AuthFormProps) {
   ) {
     try {
       setAuthError(null);
+
+      setIsLoading(true);
+      // Set persistence for session continuity
+      await setPersistence(auth, browserLocalPersistence);
 
       if (mode === 'login') {
         await signInWithEmailAndPassword(auth, data.email, data.password);

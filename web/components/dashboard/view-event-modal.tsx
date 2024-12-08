@@ -5,10 +5,19 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Calendar, MapPin, Users, Award } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { db } from "@/lib/firebaseConfig";
+import { collection, query, where, getDocs } from "firebase/firestore";
 
 interface ViewEventModalProps {
-  event: {
-    id: string; // Event ID like "1", "2", "3"
+  eventUid: string; // Event UID to fetch details
+  isOpen: boolean;
+  onClose: () => void;
+  onEdit: () => void;
+  imageMap: Record<string, string>; // Mapping from Event UIDs to Image URLs
+}
+
+export function ViewEventModal({ eventUid, isOpen, onClose, onEdit, imageMap }: ViewEventModalProps) {
+  const [event, setEvent] = useState<{
     name: string;
     description: string;
     location: string;
@@ -17,22 +26,47 @@ interface ViewEventModalProps {
     points: number;
     category: string;
     subcategory: string;
-  };
-  isOpen: boolean;
-  onClose: () => void;
-  onEdit: () => void;
-  imageMap: Record<string, string>; // Mapping from Event IDs to Image URLs
-}
-
-export function ViewEventModal({ event, isOpen, onClose, onEdit, imageMap }: ViewEventModalProps) {
-  const [eventImage, setEventImage] = useState<string>("");
+  } | null>(null);
+  const [eventImage, setEventImage] = useState<string>("/events-images/default.png");
 
   useEffect(() => {
-    // Fetch image dynamically using imageMap
-    const imagePath = imageMap[event.id] || "/events-images/default.png";
-    console.log(`Mapped image path for event ID ${event.id}: ${imagePath}`);
-    setEventImage(imagePath);
-  }, [event.id, imageMap]);
+    const fetchEvent = async () => {
+      if (!eventUid) return;
+
+      try {
+        const eventsRef = collection(db, "events");
+        const q = query(eventsRef, where("uid", "==", eventUid));
+        const querySnapshot = await getDocs(q);
+
+        if (!querySnapshot.empty) {
+          const eventData = querySnapshot.docs[0].data();
+          setEvent(eventData);
+
+          const imagePath = imageMap[eventUid] || "/events-images/default.png";
+          setEventImage(imagePath);
+        } else {
+          console.error(`No event found with UID: ${eventUid}`);
+        }
+      } catch (error) {
+        console.error("Error fetching event by UID:", error);
+      }
+    };
+
+    if (isOpen) fetchEvent();
+  }, [eventUid, isOpen, imageMap]);
+
+  if (!event) {
+    return (
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="sm:max-w-[600px] bg-gray-100 rounded-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold text-[#40514E]">Loading Event...</DialogTitle>
+          </DialogHeader>
+          <p className="text-center text-[#40514E]">Please wait while the event is loaded.</p>
+        </DialogContent>
+      </Dialog>
+    );
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -46,8 +80,8 @@ export function ViewEventModal({ event, isOpen, onClose, onEdit, imageMap }: Vie
             src={eventImage}
             alt={`Image for ${event.name}`}
             onError={(e) => {
-              console.log(
-                `Image load failed for event ID ${event.id}. Falling back to default image.`
+              console.error(
+                `Image load failed for event UID ${eventUid}. Falling back to default image.`
               );
               e.currentTarget.src = "/events-images/default.png"; // Fallback to default
             }}

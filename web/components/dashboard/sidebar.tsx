@@ -1,10 +1,20 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { cn } from "@/lib/utils"
-import { LayoutDashboard, User, Users, Calendar, Globe2, Mail, LogOut } from 'lucide-react'
-import { Button } from "@/components/ui/button"
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { cn } from "@/lib/utils";
+import {
+  LayoutDashboard,
+  User,
+  Users,
+  Calendar,
+  Globe2,
+  Mail,
+  LogOut,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { signOut } from "firebase/auth";
+import { auth } from "@/lib/firebaseConfig";
 
 const navigation = [
   {
@@ -37,10 +47,20 @@ const navigation = [
     href: "/dashboard/contact",
     icon: Mail,
   },
-]
+];
 
 export function Sidebar() {
-  const pathname = usePathname()
+  const pathname = usePathname();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth); // Sign out the user
+      router.push("/login"); // Redirect to the login page
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
+  };
 
   return (
     <div className="flex h-full w-64 flex-col bg-[#11999E] rounded-r-3xl shadow-lg">
@@ -52,15 +72,15 @@ export function Sidebar() {
       </div>
       <nav className="flex-1 space-y-2 px-3 py-4">
         {navigation.map((item) => {
-          const isActive = pathname === item.href
+          const isActive = pathname === item.href;
           return (
             <Button
               key={item.name}
               variant={isActive ? "default" : "ghost"}
               className={cn(
                 "w-full justify-start rounded-xl transition-all duration-200",
-                isActive 
-                  ? "bg-[#ffffff] text-[#40514E] hover:bg-[#ffffff]/90" 
+                isActive
+                  ? "bg-[#ffffff] text-[#40514E] hover:bg-[#ffffff]/90"
                   : "text-[#E4F9F5] hover:bg-[#30E3CA]/20"
               )}
               asChild
@@ -70,13 +90,14 @@ export function Sidebar() {
                 {item.name}
               </Link>
             </Button>
-          )
+          );
         })}
       </nav>
       <div className="p-4">
         <Button
           variant="ghost"
           className="w-full justify-start rounded-xl text-[#E4F9F5] hover:bg-[#30E3CA]/20"
+          onClick={handleLogout} // Attach the logout handler
         >
           <LogOut className="mr-2 h-5 w-5" />
           Logout
@@ -87,6 +108,5 @@ export function Sidebar() {
         <p>© 2023 All rights reserved</p>
       </div>
     </div>
-  )
+  );
 }
-

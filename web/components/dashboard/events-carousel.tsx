@@ -1,8 +1,9 @@
 "use client";
 
-import * as React from "react";
-import { db } from "@/lib/firebaseConfig"; // Import Firestore config
-import { collection, getDocs } from "firebase/firestore";
+import React, { useEffect, useState, useCallback } from "react";
+import { db, auth } from "@/lib/firebaseConfig"; // Import Firestore and Auth config
+import { collection, query, where, getDocs, onSnapshot } from "firebase/firestore";
+import { onAuthStateChanged } from "firebase/auth";
 import useEmblaCarousel from "embla-carousel-react";
 import { ChevronLeft, ChevronRight, MapPin, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -67,60 +68,88 @@ export function EventCarousel() {
     containScroll: "trimSnaps",
   });
 
-  const [canScrollPrev, setCanScrollPrev] = React.useState(false);
-  const [canScrollNext, setCanScrollNext] = React.useState(true);
-  const [events, setEvents] = React.useState<any[]>([]);
-  const [imageMap, setImageMap] = React.useState<Record<string, string>>({});
-  const [viewingEvent, setViewingEvent] = React.useState<any | null>(null);
-  const [editingEvent, setEditingEvent] = React.useState<any | null>(null);
+  const [canScrollPrev, setCanScrollPrev] = useState(false);
+  const [canScrollNext, setCanScrollNext] = useState(true);
+  const [events, setEvents] = useState<any[]>([]);
+  const [imageMap, setImageMap] = useState<Record<string, string>>({});
+  const [viewingEventUid, setViewingEventUid] = useState<string | null>(null);
+  const [editingEvent, setEditingEvent] = useState<any | null>(null);
+  const [currentUserCreatedEvents, setCurrentUserCreatedEvents] = useState<string[]>([]);
 
-  // Fetch events and map images
-  const fetchAllEvents = React.useCallback(async () => {
-    try {
-      const eventsRef = collection(db, "events");
-      const querySnapshot = await getDocs(eventsRef);
+  // Fetch current user's createdEvents UIDs
+  useEffect(() => {
+    const fetchCurrentUserEvents = async () => {
+      const authUser = auth.currentUser;
 
-      const fetchedEvents = querySnapshot.docs.map((doc, index) => {
-        const uuid = doc.id;
-        const imageFile = `${index + 1}.png`; // Assign images in sequence
-        return {
-          id: uuid,
-          image: imageFile,
-          ...doc.data(),
-        };
-      });
+      if (authUser) {
+        const usersRef = collection(db, "users");
+        const q = query(usersRef, where("email", "==", authUser.email));
+        const querySnapshot = await getDocs(q);
 
-      // Map UUIDs to images
-      const uuidToImage = fetchedEvents.reduce((map, event) => {
-        map[event.id] = `/events-images/${event.image}`;
+        if (!querySnapshot.empty) {
+          const userDoc = querySnapshot.docs[0];
+          const userData = userDoc.data();
+          setCurrentUserCreatedEvents(userData.createdEvents || []);
+        }
+      }
+    };
+
+    const unsubscribeAuth = onAuthStateChanged(auth, () => {
+      fetchCurrentUserEvents();
+    });
+
+    return () => unsubscribeAuth();
+  }, []);
+
+  // Fetch only events organized by the current user
+  useEffect(() => {
+    if (currentUserCreatedEvents.length === 0) {
+      setEvents([]); // Clear events if no createdEvents are found
+      return;
+    }
+
+    const eventsRef = collection(db, "events");
+    const unsubscribe = onSnapshot(eventsRef, (snapshot) => {
+      const fetchedEvents = snapshot.docs
+        .map((doc) => {
+          const data = doc.data();
+          const uid = data.uid; // Extract the `uid` field from the document
+
+          return {
+            id: doc.id, // Firestore document ID
+            uid, // The event's UID
+            ...data,
+          };
+        })
+        .filter((event) => currentUserCreatedEvents.includes(event.uid)); // Only include events created by the user
+
+      // Map UIDs to images
+      const uidToImage = fetchedEvents.reduce((map, event) => {
+        map[event.uid] = `/events-images/${event.uid}.png`;
         return map;
       }, {} as Record<string, string>);
 
-      setEvents(fetchedEvents);
-      setImageMap(uuidToImage);
-    } catch (error) {
-      console.error("Error fetching all events:", error);
-    }
-  }, []);
+      setEvents(fetchedEvents); // Update events state
+      setImageMap(uidToImage); // Update image mapping
+    });
 
-  React.useEffect(() => {
-    fetchAllEvents();
-  }, [fetchAllEvents]);
+    return () => unsubscribe(); // Clean up the listener on component unmount
+  }, [currentUserCreatedEvents]);
 
-  const scrollPrev = React.useCallback(() => {
+  const scrollPrev = useCallback(() => {
     if (emblaApi) emblaApi.scrollPrev();
   }, [emblaApi]);
 
-  const scrollNext = React.useCallback(() => {
+  const scrollNext = useCallback(() => {
     if (emblaApi) emblaApi.scrollNext();
   }, [emblaApi]);
 
-  const onSelect = React.useCallback((emblaApi: any) => {
+  const onSelect = useCallback((emblaApi: any) => {
     setCanScrollPrev(emblaApi.canScrollPrev());
     setCanScrollNext(emblaApi.canScrollNext());
   }, []);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!emblaApi) return;
 
     onSelect(emblaApi);
@@ -133,10 +162,14 @@ export function EventCarousel() {
       <div className="overflow-hidden rounded-2xl" ref={emblaRef}>
         <div className="flex gap-6">
           {events.map((event) => {
-            const eventImage = imageMap[event.id] || "/events-images/default.png"; // Default fallback
+            const eventImage = imageMap[event.uid] || "/events-images/default.png"; // Default fallback
             return (
-              <div key={event.id} className="flex-[0_0_350px] min-w-0">
-                <EventCard event={event} onView={() => setViewingEvent(event)} eventImage={eventImage} />
+              <div key={event.uid} className="flex-[0_0_350px] min-w-0">
+                <EventCard
+                  event={event}
+                  onView={() => setViewingEventUid(event.uid)}
+                  eventImage={eventImage}
+                />
               </div>
             );
           })}
@@ -162,16 +195,17 @@ export function EventCarousel() {
           <ChevronRight className="h-4 w-4" />
         </Button>
       )}
-      {viewingEvent && (
+      {viewingEventUid && (
         <ViewEventModal
-          event={viewingEvent}
-          isOpen={!!viewingEvent}
-          onClose={() => setViewingEvent(null)}
+          eventUid={viewingEventUid}
+          isOpen={!!viewingEventUid}
+          onClose={() => setViewingEventUid(null)}
           onEdit={() => {
-            setEditingEvent(viewingEvent);
-            setViewingEvent(null);
+            const editingEvent = events.find((event) => event.uid === viewingEventUid);
+            setEditingEvent(editingEvent);
+            setViewingEventUid(null);
           }}
-          imageMap={imageMap} // Pass the mapping here
+          imageMap={imageMap}
         />
       )}
       {editingEvent && (
