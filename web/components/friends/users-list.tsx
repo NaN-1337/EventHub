@@ -30,14 +30,14 @@ export function UsersList({ users, currentUser, selectedConversationId, onSelect
 
   return (
     <div className="flex flex-col h-full">
-      <div className="p-4 border-b border-gray-200">
+      <div className="p-4 border-b border-gray-200 bg-white">
         <div className="relative mb-4">
           <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
           <Input
             placeholder="Search users..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-8"
+            className="pl-8 bg-white border-[#30E3CA] focus:ring-[#11999E]"
           />
         </div>
       </div>
@@ -57,12 +57,12 @@ export function UsersList({ users, currentUser, selectedConversationId, onSelect
               >
                 <Avatar>
                   <AvatarImage src={user.avatar || `https://avatar.vercel.sh/${user.uid}`} />
-                  <AvatarFallback>
+                  <AvatarFallback className="bg-[#30E3CA] text-[#40514E]">
                     {user.name.substring(0, 2).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1 text-left">
-                  <div className="font-medium">{user.name}</div>
+                  <div className="font-medium text-[#40514E]">{user.name}</div>
                   <div className="text-sm text-gray-500 truncate">
                     {user.email}
                   </div>

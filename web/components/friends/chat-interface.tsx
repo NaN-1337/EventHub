@@ -4,18 +4,23 @@ import { useState, useEffect } from "react"
 import { Card } from "@/components/ui/card"
 import { auth, db } from "@/lib/firebaseConfig"
 import { onAuthStateChanged } from "firebase/auth"
-import { collection, query, where, onSnapshot, getDocs, addDoc, serverTimestamp } from "firebase/firestore"
+import { collection, query, where, onSnapshot, getDocs, addDoc, serverTimestamp, doc, getDoc } from "firebase/firestore"
 import { ChatArea } from "./chat-area"
 import { UsersList } from "./users-list"
 import { GroupsList } from "./groups-list"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { NewGroupDialog } from "./new-group-dialog"
+import { Button } from "@/components/ui/button"
+import { NonFriendsModal } from "./non-friends-modal"
+import { ViewUserModal } from "./view-user-modal"
+import { UserPlus } from 'lucide-react'
 
 interface User {
   uid: string
   name: string
   email: string
   avatar: string
+  friends?: string[]
 }
 
 interface Group {
@@ -39,6 +44,7 @@ function getPrivateConversationId(uid1: string, uid2: string): string {
 
 export function ChatInterface() {
   const [currentUser, setCurrentUser] = useState<User | null>(null)
+  const [currentUserDocId, setCurrentUserDocId] = useState<string | null>(null)
   const [users, setUsers] = useState<User[]>([])
   const [groups, setGroups] = useState<Group[]>([])
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
@@ -48,19 +54,32 @@ export function ChatInterface() {
 
   const [isNewGroupOpen, setIsNewGroupOpen] = useState(false)
 
+  // New state for non-friend functionality
+  const [isNonFriendsOpen, setIsNonFriendsOpen] = useState(false)
+  const [selectedNonFriendUser, setSelectedNonFriendUser] = useState<User | null>(null)
+  const [isViewUserOpen, setIsViewUserOpen] = useState(false)
+
+  // Load current user
+  const loadCurrentUser = async (authUser: any) => {
+    if (authUser) {
+      const usersRef = collection(db, "users")
+      const q = query(usersRef, where("email", "==", authUser.email))
+      const querySnapshot = await getDocs(q)
+      if (!querySnapshot.empty) {
+        const userDoc = querySnapshot.docs[0]
+        const userData = userDoc.data() as User
+        setCurrentUser(userData)
+        setCurrentUserDocId(userDoc.id)
+      }
+    } else {
+      setCurrentUser(null)
+      setCurrentUserDocId(null)
+    }
+  }
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (authUser) => {
-      if (authUser) {
-        const usersRef = collection(db, "users")
-        const q = query(usersRef, where("email", "==", authUser.email))
-        const querySnapshot = await getDocs(q)
-        if (!querySnapshot.empty) {
-          const userData = querySnapshot.docs[0].data() as User
-          setCurrentUser(userData)
-        }
-      } else {
-        setCurrentUser(null)
-      }
+      await loadCurrentUser(authUser)
     })
     return () => unsubscribe()
   }, [])
@@ -73,7 +92,7 @@ export function ChatInterface() {
       setUsers(allUsers)
     }
     fetchUsers()
-  }, [])
+  }, [currentUser]) // refetch if currentUser changes to update lists
 
   const loadGroups = async () => {
     const groupsRef = collection(db, "groups")
@@ -95,7 +114,6 @@ export function ChatInterface() {
       return
     }
 
-    // Removed orderBy here to avoid needing a composite index
     const q = query(
       collection(db, "messages"),
       where("conversationId", "==", selectedConversationId)
@@ -159,24 +177,58 @@ export function ChatInterface() {
     setSelectedGroup(newGroup)
   }
 
+  // Separate friends and non-friends
+  const friendUsers = currentUser?.friends
+    ? users.filter(u => currentUser.friends?.includes(u.email))
+    : []
+  const nonFriendUsers = users.filter(u =>
+    u.uid !== currentUser?.uid && !currentUser?.friends?.includes(u.email)
+  )
+
+  const handleViewDetails = (user: User) => {
+    setSelectedNonFriendUser(user)
+    setIsViewUserOpen(true)
+  }
+
+  const handleFriendAdded = async () => {
+    // After adding a friend, re-fetch currentUser
+    if (currentUserDocId) {
+      const userRef = doc(db, "users", currentUserDocId)
+      const userSnap = await getDoc(userRef)
+      if (userSnap.exists()) {
+        setCurrentUser(userSnap.data() as User)
+      }
+    }
+  }
+
   return (
     <Card className="h-[calc(100vh-9rem)] bg-gradient-to-br from-[#E4F9F5] to-[#30E3CA] rounded-2xl shadow-lg overflow-hidden">
       <div className="flex h-full">
         <div className="w-80 border-r border-gray-200 bg-white flex flex-col">
           <Tabs defaultValue="users" className="flex flex-col h-full">
-            <TabsList className="flex-shrink-0 p-2">
-              <TabsTrigger value="users">Users</TabsTrigger>
-              <TabsTrigger value="groups">Groups</TabsTrigger>
+            <TabsList className="flex-shrink-0 p-2 bg-white">
+              <TabsTrigger value="users" className="data-[state=active]:bg-[#11999E] data-[state=active]:text-white">Co-Workers</TabsTrigger>
+              <TabsTrigger value="groups" className="data-[state=active]:bg-[#11999E] data-[state=active]:text-white">Groups</TabsTrigger>
             </TabsList>
-            <TabsContent value="users" className="flex-1 p-0">
+            <TabsContent value="users" className="flex-1 p-0 overflow-hidden">
+              <div className="p-2">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setIsNonFriendsOpen(true)}
+                  className="w-full bg-white hover:bg-[#30E3CA] text-[#40514E] hover:text-white transition-colors"
+                >
+                  <UserPlus className="mr-2 h-4 w-4" />
+                  Add New Co-Workers
+                </Button>
+              </div>
               <UsersList
-                users={users}
+                users={friendUsers}
                 currentUser={currentUser}
                 selectedConversationId={selectedConversationId}
                 onSelectUser={handleSelectUser}
               />
             </TabsContent>
-            <TabsContent value="groups" className="flex-1 p-0">
+            <TabsContent value="groups" className="flex-1 p-0 overflow-hidden">
               <GroupsList
                 groups={groups}
                 selectedConversationId={selectedConversationId}
@@ -199,7 +251,21 @@ export function ChatInterface() {
         onOpenChange={setIsNewGroupOpen}
         onCreateGroup={handleCreateGroup}
         currentUser={currentUser}
-        users={users}
+        users={friendUsers}
+      />
+      <NonFriendsModal
+        open={isNonFriendsOpen}
+        onOpenChange={setIsNonFriendsOpen}
+        nonFriendUsers={nonFriendUsers}
+        onViewDetails={handleViewDetails}
+      />
+      <ViewUserModal
+        open={isViewUserOpen}
+        onOpenChange={setIsViewUserOpen}
+        user={selectedNonFriendUser}
+        currentUserDocId={currentUserDocId}
+        currentUser={currentUser}
+        onFriendAdded={handleFriendAdded}
       />
     </Card>
   )
