@@ -105,7 +105,7 @@ export function CreateEventModal({ isOpen, onClose }: CreateEventModalProps) {
 
       // Prepare new event data
       const newEvent = {
-        uid: nextUid.toString(), // UID field
+        uid: nextUid.toString(),
         name,
         description,
         location,
@@ -114,8 +114,10 @@ export function CreateEventModal({ isOpen, onClose }: CreateEventModalProps) {
         subcategory,
         organizer: "community",
         points: 3,
-        organizer_name: currentUserName,
+        organizer_name: "admin", // Replace with the current user's name dynamically if available
         participants: [],
+        price: "0", // Add price as "0"
+        feelings: {}, // Add feelings as an empty map
       };
 
       // Add the new event to Firestore

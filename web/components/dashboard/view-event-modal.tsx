@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Calendar, MapPin, Users, Award } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { db } from "@/lib/firebaseConfig";
+import { db, auth } from "@/lib/firebaseConfig";
 import { collection, query, where, getDocs } from "firebase/firestore";
 
 interface ViewEventModalProps {
@@ -28,6 +28,7 @@ export function ViewEventModal({ eventUid, isOpen, onClose, onEdit, imageMap }: 
     subcategory: string;
   } | null>(null);
   const [eventImage, setEventImage] = useState<string>("/events-images/default.png");
+  const [canEdit, setCanEdit] = useState<boolean>(false); // Track if the user can edit
 
   useEffect(() => {
     const fetchEvent = async () => {
@@ -52,7 +53,34 @@ export function ViewEventModal({ eventUid, isOpen, onClose, onEdit, imageMap }: 
       }
     };
 
-    if (isOpen) fetchEvent();
+    const checkIfUserCanEdit = async () => {
+      try {
+        const user = auth.currentUser;
+        if (!user) return;
+
+        const usersRef = collection(db, "users");
+        const userQuery = query(usersRef, where("email", "==", user.email));
+        const userSnapshot = await getDocs(userQuery);
+
+        if (!userSnapshot.empty) {
+          const userData = userSnapshot.docs[0].data();
+          if (userData.createdEvents && userData.createdEvents.includes(eventUid)) {
+            setCanEdit(true);
+          } else {
+            setCanEdit(false);
+          }
+        } else {
+          console.error("User not found in Firestore.");
+        }
+      } catch (error) {
+        console.error("Error checking user permissions:", error);
+      }
+    };
+
+    if (isOpen) {
+      fetchEvent();
+      checkIfUserCanEdit();
+    }
   }, [eventUid, isOpen, imageMap]);
 
   if (!event) {
@@ -80,9 +108,9 @@ export function ViewEventModal({ eventUid, isOpen, onClose, onEdit, imageMap }: 
             src={eventImage}
             alt={`Image for ${event.name}`}
             onError={(e) => {
-              console.error(
-                `Image load failed for event UID ${eventUid}. Falling back to default image.`
-              );
+              // console.error(
+              //   `Image load failed for event UID ${eventUid}. Falling back to default image.`
+              // );
               e.currentTarget.src = "/events-images/default.png"; // Fallback to default
             }}
             className="w-full h-48 object-cover rounded-lg"
@@ -118,9 +146,11 @@ export function ViewEventModal({ eventUid, isOpen, onClose, onEdit, imageMap }: 
             <Button onClick={onClose} variant="outline">
               Close
             </Button>
-            <Button onClick={onEdit} className="bg-[#11999E] hover:bg-[#11999E]/90 text-white">
-              Edit Event
-            </Button>
+            {canEdit && (
+              <Button onClick={onEdit} className="bg-[#11999E] hover:bg-[#11999E]/90 text-white">
+                Edit Event
+              </Button>
+            )}
           </div>
         </div>
       </DialogContent>
