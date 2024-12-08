@@ -1,14 +1,19 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Calendar } from "@/components/ui/calendar";
-import { db, auth } from "@/lib/firebaseConfig";
+import { db } from "@/lib/firebaseConfig";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { collection, query, where, getDocs } from "firebase/firestore";
-import { CalendarDays, MapPin, Users, Award } from 'lucide-react';
+import { CalendarDays, MapPin, Users, Award } from "lucide-react";
 
 interface CalendarModalProps {
   isOpen: boolean;
@@ -29,7 +34,8 @@ interface Event {
 }
 
 export function CalendarModal({ isOpen, onClose, userEmail }: CalendarModalProps) {
-  const [events, setEvents] = useState<Event[]>([]);
+  const [createdEvents, setCreatedEvents] = useState<Event[]>([]);
+  const [joinedEvents, setJoinedEvents] = useState<Event[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [selectedEvents, setSelectedEvents] = useState<Event[]>([]);
   const [imageMap, setImageMap] = useState<Record<string, string>>({});
@@ -45,29 +51,38 @@ export function CalendarModal({ isOpen, onClose, userEmail }: CalendarModalProps
 
         if (!userSnapshot.empty) {
           const userData = userSnapshot.docs[0].data();
-          const createdEvents = userData.createdEvents || [];
+          const createdEventIds = userData.createdEvents || [];
+          const joinedEventIds = userData.joinedEvents || [];
 
           const eventsRef = collection(db, "events");
-          const eventsQuery = query(eventsRef, where("uid", "in", createdEvents));
-          const eventSnapshot = await getDocs(eventsQuery);
 
-          const fetchedEvents = eventSnapshot.docs.map((doc) => ({
-            uid: doc.id,
-            ...doc.data(),
-          })) as Event[];
+          const fetchEvents = async (eventIds: string[]) => {
+            if (eventIds.length === 0) return [];
+            const eventsQuery = query(eventsRef, where("uid", "in", eventIds));
+            const eventSnapshot = await getDocs(eventsQuery);
+            return eventSnapshot.docs.map((doc) => ({
+              uid: doc.id,
+              ...doc.data(),
+            })) as Event[];
+          };
 
-          setEvents(fetchedEvents);
+          const fetchedCreatedEvents = await fetchEvents(createdEventIds);
+          const fetchedJoinedEvents = await fetchEvents(joinedEventIds);
 
-          // Create image map
-          const newImageMap = fetchedEvents.reduce((acc, event) => {
-            acc[event.uid] = `/events-images/${event.uid}.png`;
-            return acc;
-          }, {} as Record<string, string>);
+          setCreatedEvents(fetchedCreatedEvents);
+          setJoinedEvents(fetchedJoinedEvents);
+
+          const newImageMap = [...fetchedCreatedEvents, ...fetchedJoinedEvents].reduce(
+            (acc, event) => {
+              acc[event.uid] = `/events-images/${event.uid}.png`;
+              return acc;
+            },
+            {} as Record<string, string>
+          );
           setImageMap(newImageMap);
 
-          // Set initial selected events
           const today = new Date();
-          const todayEvents = fetchedEvents.filter(
+          const todayEvents = [...fetchedCreatedEvents, ...fetchedJoinedEvents].filter(
             (event) => new Date(event.date).toDateString() === today.toDateString()
           );
           setSelectedEvents(todayEvents);
@@ -85,7 +100,7 @@ export function CalendarModal({ isOpen, onClose, userEmail }: CalendarModalProps
   const handleDateSelect = (date: Date | undefined) => {
     setSelectedDate(date);
     if (date) {
-      const eventsOnDate = events.filter(
+      const eventsOnDate = [...createdEvents, ...joinedEvents].filter(
         (event) => new Date(event.date).toDateString() === date.toDateString()
       );
       setSelectedEvents(eventsOnDate);
@@ -113,12 +128,12 @@ export function CalendarModal({ isOpen, onClose, userEmail }: CalendarModalProps
               }}
               components={{
                 Day: ({ date }) => {
-                  const hasEvent = events.some(
+                  const hasEvent = [...createdEvents, ...joinedEvents].some(
                     (event) => new Date(event.date).toDateString() === date.toDateString()
                   );
                   return (
-                    <div 
-                      className={`relative ${hasEvent ? 'cursor-pointer' : ''}`}
+                    <div
+                      className={`relative ${hasEvent ? "cursor-pointer" : ""}`}
                       onClick={() => hasEvent && handleDateSelect(date)}
                     >
                       <div>{date.getDate()}</div>
@@ -135,14 +150,16 @@ export function CalendarModal({ isOpen, onClose, userEmail }: CalendarModalProps
           </div>
           <div className="flex-1">
             <h3 className="text-xl font-semibold mb-4 text-[#40514E]">
-              Events on {selectedDate ? selectedDate.toLocaleDateString() : 'Selected Date'}
+              Events on {selectedDate ? selectedDate.toLocaleDateString() : "Selected Date"}
             </h3>
             <ScrollArea className="h-[400px] pr-4">
               {selectedEvents.length > 0 ? (
                 selectedEvents.map((event) => (
                   <div
                     key={event.uid}
-                    className="mb-4 p-4 bg-[#E4F9F5] rounded-lg shadow-sm hover:shadow-md transition-shadow"
+                    className={`mb-4 p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow ${
+                      createdEvents.some((e) => e.uid === event.uid) ? "bg-[#E4F9F5]" : "bg-[#FCE4EC]"
+                    }`}
                   >
                     <img
                       src={imageMap[event.uid] || "/events-images/default.png"}
@@ -195,4 +212,3 @@ export function CalendarModal({ isOpen, onClose, userEmail }: CalendarModalProps
     </Dialog>
   );
 }
-
